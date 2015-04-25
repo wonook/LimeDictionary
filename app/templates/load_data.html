@@ -1,0 +1,15 @@
+{% block content %}
+  <h1>load name</h1>
+  <form action="" method="post" name="add_file">
+      {{ form.hidden_tag() }}
+      <p>
+          Enter first:<br>
+          {{ form.first(size=80) }}<br>
+      </p>
+      <p>
+          Enter second:<br>
+          {{ form.second(size=80) }}<br>
+      </p>
+      <p><input type="submit" value="add csv"></p>
+  </form>
+{% endblock %}
