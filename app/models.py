@@ -58,7 +58,7 @@ class WordRank(db.Model):
 
 class RankLog(db.Model):
     word_id = db.Column(db.Integer, db.ForeignKey('word_search.word_id', ondelete='CASCADE'), primary_key=True)
-    elapsed_date = db.Column(db.SmallInteger, primary_key=True)
+    elapsed_date = db.Column(db.SmallInteger, nullable=False)
     rank_good = db.Column(db.Integer)
     rank_bad = db.Column(db.Integer)
     viewed = db.Column(db.Integer)
