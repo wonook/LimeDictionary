@@ -1,5 +1,6 @@
-from app import db
+from app import db, redis_c
 import os
+import redis
 from sqlalchemy.sql import text
 
 class WordAll(db.Model):
@@ -23,6 +24,10 @@ class WordSearch(db.Model):
 class CandidateWord(db.Model):
     word_id = db.Column(db.Integer, db.ForeignKey('word_all.word_id', ondelete='CASCADE'), primary_key=True)
     vote = db.Column(db.Integer)
+
+    def __init(self, word_id):
+        self.word_id = word_id
+        self.vote = 0
 
 
 class ReportLog(db.Model):
@@ -78,7 +83,12 @@ RAWQUERY = {
                       text('UPDATE rank_log SET rank_bad = rank_bad + 1 WHERE word_id = :word_id and elapsed_date = 0')],
     'word_view': [text('UPDATE word_rank SET viewed = viewed + 1 WHERE word_id = :word_id'),
                   text('UPDATE rank_log SET viewed = viewed + 1 WHERE word_id = :word_id and elapsed_date = 0')],
-    'word_search': text('SELECT word_string from word_all WHERE word_string = :word'),
+    'word_search': text('''
+    SELECT word_id, word_string, rank_good, rank_bad, viewed, fresh_rate, reported
+    FROM (word_search NATURAL JOIN word_all) NATURAL JOIN word_rank
+    WHERE word_parsed REGEXP :word
+    '''),
+    'word_candidate_move': text('DELETE FROM word_candidate WHERE word_id = :word_id'),
     'report': text('UPDATE word_all SET reported = reported + 1 WHERE word_id = :word_id'),
     'word_delete': text('DELETE FROM word_all WHERE word_id = :word_id'),
     'fresh_rate': text('''
@@ -127,23 +137,68 @@ def parse_string(s):
         ret_val += parse_char(c)
     return ret_val
 
+def parse_jlist(lst):
+    if '*' in lst:
+        return '.'
+    elif len(lst) == 1:
+        return JAMOTABLE[lst[0]]
+    ret_val = '['
+    for c in [JAMOTABLE[x] for x in lst]:
+        ret_val += c
+    return ret_val + ']'
+
+def parse_to_regex(jamo_tup):
+    """
+    :param jamo_tup:
+        '성가대...' is in ['?', (['ㄱ','ㄴ'],['ㅏ'], ['X']), (['ㄷ'],['ㅐ','ㅏ'],['*']), '*']
+    :return: regex string
+    """
+    if jamo_tup == ['*']:
+        return '.*'
+    ret_val = '^'
+    for tup in jamo_tup:
+        if tup == '?':
+            ret_val += '...'
+            continue
+        elif tup == '*':
+            ret_val += '*'
+            continue
+        (fst, mid, lst) = tup
+        ret = parse_jlist(fst) + parse_jlist(mid) + parse_jlist(lst)
+        ret_val += ret
+
+    ret_val += '$'
+    return ret_val
+
+
 def word_insert(word):
     db.session.add(WordAll(word))
     db.session.commit()
 
 def word_candidate_insert(word):
-    pass
+    w = WordAll(word)
+    db.session.add(w)
+    db.session.commit()
+    db.session.add(CandidateWord(w.word_id))
+    db.session.commit()
+    redis_c.set('id_' + str(w.word_id), word)
 
 def word_candidate_move(word_id):
-    pass
+    db.session.add(WordSearch(word_id, parse_string(get_word(str(word_id)))))
+    db.session.commit()
+    db.session.add(WordRank(word_id))
+    db.session.commit()
+    db.engine.execute(RAWQUERY['word_candidate_move'], word_id=word_id)
 
 def word_search_insert(word):
     w = WordAll(word)
     db.session.add(w)
     db.session.commit()
     db.session.add(WordSearch(w.word_id, parse_string(word)))
+    db.session.commit()
     db.session.add(WordRank(w.word_id))
     db.session.commit()
+    redis_c.set('id_' + str(w.word_id), word)
 
 def report(word_id, report_type, report_detail):
     db.session.add(ReportLog(word_id, report_type, report_detail))
@@ -158,6 +213,7 @@ def word_report(word_id, report_type, report_detail):
 
 def word_delete(word_id):
     db.engine.execute(RAWQUERY['word_delete'], word_id=word_id)
+    redis_c.delete('id_' + str(word_id))
 
 def word_upvote(word_id):
     db.engine.execute(RAWQUERY['word_upvote'][0], word_id=word_id)
@@ -176,17 +232,25 @@ def word_search(word_regex):
     for word in result.fetchmany(10):
         print(word)
 
+def get_word(word_id_str):
+    return redis_c.get('id_' + word_id_str).decode('utf-8')
+
 def tag_insert(word_id, tag):
-    pass
+    if redis_c.zscore(word_id, tag) is None:
+        print('add {0} {1}'.format(word_id, tag))
+        redis_c.zadd(word_id, 1, tag)
 
 def tag_upvote(word_id, tag):
-    pass
+    if redis_c.zscore(word_id, tag) is None:
+        redis_c.zincrby(word_id, tag)
 
 def tag_downvote(word_id, tag):
-    pass
+    if redis_c.zscore(word_id, tag) is None:
+        redis_c.zincrby(word_id, tag, -1)
 
-def tag_view(word_id, fetch_num):
-    pass
+def tag_fetch(word_id, fetch_num):
+    for (id, val) in redis_c.zrange(word_id, 0, fetch_num-1, desc=True, withscores=True):
+        print(get_word(id.decode('utf-8')), val)
 
 def update_fresh_rate():
     db.engine.execute(RAWQUERY['fresh_rate'])
@@ -206,7 +270,7 @@ def open_save_file(filename):
                 w = line.partition(',')[0]
                 word_search_insert(w)
             except Exception as e:
-                print("duplicate ", type(e))
+                print("duplicate {0}: {1}".format(type(e), e))
             i += 1
             if i > 100:
                 i = 0

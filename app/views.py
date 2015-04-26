@@ -19,5 +19,13 @@ def add_data():
 def read_data():
     form = DataAddForm()
     if form.validate_on_submit():
-        models.word_search(form.filename.data)
-    return render_template('add_file.html', title='add csv', form=form)
+        models.word_search(models.parse_string(form.filename.data))
+    return render_template('add_file.html', title='read csv', form=form)
+
+@app.route('/redis', methods=['GET', 'POST'])
+def redis_add():
+    form = DataAddForm()
+    if form.validate_on_submit():
+        partdata = form.filename.data.partition(',')
+        models.tag_fetch(partdata[0], int(partdata[2]))
+    return render_template('add_file.html', title='add redis', form=form)
