@@ -8,3 +8,5 @@ _mailinglist
 .tox
 *.egg
 *.egg-info
+.idea/*
+.idea
