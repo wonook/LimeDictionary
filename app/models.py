@@ -33,7 +33,7 @@ class CandidateWord(db.Model):
 class ReportLog(db.Model):
     report_id = db.Column(db.Integer, primary_key=True)
     word_id = db.Column(db.Integer, db.ForeignKey('word_all.word_id', ondelete='CASCADE'), nullable=False)
-    report_type = db.Column(db.SmallInteger, db.ForeignKey('report_type.report_type'), nullable=False)
+    report_type = db.Column(db.SmallInteger, db.ForeignKey('report_class.report_type'), nullable=False)
     report_detail = db.Column(db.String(80))
 
     def __init__(self, word_id, report_type, report_detail):
@@ -64,7 +64,7 @@ class WordRank(db.Model):
 
 class RankLog(db.Model):
     word_id = db.Column(db.Integer, db.ForeignKey('word_search.word_id', ondelete='CASCADE'), primary_key=True)
-    elapsed_date = db.Column(db.SmallInteger, primary_key=True, nullable=False)
+    elapsed_date = db.Column(db.SmallInteger, primary_key=True, nullable=False, autoincrement=False)
     rank_good = db.Column(db.Integer)
     rank_bad = db.Column(db.Integer)
     viewed = db.Column(db.Integer)
