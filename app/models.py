@@ -41,7 +41,7 @@ class ReportLog(db.Model):
         self.report_detail = report_detail
 
 
-class ReportType(db.Model):
+class ReportClass(db.Model):
     report_type = db.Column(db.SmallInteger, primary_key=True)
     report_name = db.Column(db.String(24))
 
@@ -63,7 +63,7 @@ class WordRank(db.Model):
 
 class RankLog(db.Model):
     word_id = db.Column(db.Integer, db.ForeignKey('word_search.word_id', ondelete='CASCADE'), primary_key=True)
-    elapsed_date = db.Column(db.SmallInteger, nullable=False)
+    elapsed_date = db.Column(db.SmallInteger, primary_key=True, nullable=False)
     rank_good = db.Column(db.Integer)
     rank_bad = db.Column(db.Integer)
     viewed = db.Column(db.Integer)
