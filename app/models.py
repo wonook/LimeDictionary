@@ -31,7 +31,8 @@ class CandidateWord(db.Model):
 
 
 class ReportLog(db.Model):
-    word_id = db.Column(db.Integer, db.ForeignKey('word_all.word_id', ondelete='CASCADE'), primary_key=True)
+    report_id = db.Column(db.Integer, primary_key=True)
+    word_id = db.Column(db.Integer, db.ForeignKey('word_all.word_id', ondelete='CASCADE'), nullable=False)
     report_type = db.Column(db.SmallInteger, db.ForeignKey('report_type.report_type'), nullable=False)
     report_detail = db.Column(db.String(80))
 
