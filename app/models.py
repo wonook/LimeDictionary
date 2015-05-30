@@ -154,7 +154,7 @@ def parse_jlist(lst):
 def parse_to_regex(jamo_tup):
     """
     :param jamo_tup:
-        '성가대...' is in ['?', (['ㄱ','ㄴ'],['ㅏ'], ['X']), (['ㄷ'],['ㅐ','ㅏ'],['*']), '*']
+        '성가대...' is in ['?', [['ㄱ','ㄴ'],['ㅏ'], ['X']], [['ㄷ'],['ㅐ','ㅏ'],['*']], '*']
     :return: regex string
     """
     if jamo_tup == ['*']:
@@ -167,7 +167,7 @@ def parse_to_regex(jamo_tup):
         elif tup == '*':
             ret_val += '*'
             continue
-        (fst, mid, lst) = tup
+        (fst, mid, lst) = (tup[0], tup[1], tup[2])
         ret = parse_jlist(fst) + parse_jlist(mid) + parse_jlist(lst)
         ret_val += ret
 
