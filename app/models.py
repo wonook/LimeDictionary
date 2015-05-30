@@ -257,11 +257,11 @@ def tag_insert(word_id, tag):
         redis_c.zadd(word_id, 1, tag)
 
 def tag_upvote(word_id, tag):
-    if redis_c.zscore(word_id, tag) is None:
+    if redis_c.zscore(word_id, tag) is not None:
         redis_c.zincrby(word_id, tag)
 
 def tag_downvote(word_id, tag):
-    if redis_c.zscore(word_id, tag) is None:
+    if redis_c.zscore(word_id, tag) is not None:
         redis_c.zincrby(word_id, tag, -1)
 
 def tag_fetch(word_id, fetch_num):
