@@ -1,11 +1,15 @@
 from app import app, models
 from flask import render_template, flash, redirect
 from .forms import DataAddForm
+from flask import make_response
+
+
 
 @app.route('/')
 @app.route('/index')
-def index():
-    return 'world'
+def index(**kwargs):
+    return make_response(open('app/templates/index.html').read())
+
 
 @app.route('/add_data', methods=['GET', 'POST'])
 def add_data():
