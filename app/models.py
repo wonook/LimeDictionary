@@ -89,6 +89,9 @@ RAWQUERY = {
     FROM (word_search NATURAL JOIN word_all) NATURAL JOIN word_rank
     WHERE word_parsed REGEXP :word
     '''),
+    'get_word_data': text('''
+    SELECT * FROM word_rank WHERE word_id = :word_id
+    '''),
     'word_candidate_move': text('DELETE FROM word_candidate WHERE word_id = :word_id'),
     'report': text('UPDATE word_all SET reported = reported + 1 WHERE word_id = :word_id'),
     'word_delete': text('DELETE FROM word_all WHERE word_id = :word_id'),
@@ -235,6 +238,18 @@ def word_search(word_regex):
 
 def get_word(word_id_str):
     return redis_c.get('id_' + word_id_str).decode('utf-8')
+
+def get_word_data(word_id):
+    result = db.engine.execute(RAWQUERY['get_word_data'], word_id=word_id).first()
+    word_data = {
+        'word_id': word_id,
+        'word_string': get_word(str(word_id)),
+        'rank_good': result[1],
+        'rank_bad': result[2],
+        'viewed': result[3],
+        'fresh_rate': result[4]
+    }
+    return word_data
 
 def tag_insert(word_id, tag):
     if redis_c.zscore(word_id, tag) is None:
