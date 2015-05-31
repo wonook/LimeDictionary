@@ -139,7 +139,7 @@ RAWQUERY = {
     )
     '''),
     'elapse_time': [text('UPDATE rank_log SET elapsed_date = elapsed_date + 1'),
-                    text('DELETE FROM word_all WHERE elapsed_date >= 30')],
+                    text('DELETE FROM rank_log WHERE elapsed_date >= 30')],
     'get_search_json': text('''
 		SELECT word_rank.word_id AS word_id, word_all.word_string AS word_string, rank_good, rank_bad, viewed, fresh_rate 
 		FROM (word_all NATURAL JOIN word_rank) 
