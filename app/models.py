@@ -1,6 +1,7 @@
 from app import db, redis_c
 import os
 import redis
+import json
 from sqlalchemy.sql import text
 
 class WordAll(db.Model):
@@ -138,7 +139,14 @@ RAWQUERY = {
     )
     '''),
     'elapse_time': [text('UPDATE rank_log SET elapsed_date = elapsed_date + 1'),
-                    text('DELETE FROM word_all WHERE elapsed_date >= 30')]
+                    text('DELETE FROM word_all WHERE elapsed_date >= 30')],
+    'get_search_json': text('''
+		SELECT word_rank.word_id AS word_id, word_all.word_string AS word_string, rank_good, rank_bad, viewed, fresh_rate 
+		FROM (word_all NATURAL JOIN word_rank) 
+		WHERE (word_all.word_id IN (SELECT word_id FROM word_search AS search WHERE (search.word_parsed REGEXP :regex))) 
+		ORDER BY (:column_name) 
+		LIMIT (:start_index), (:counts_per_page)
+		''')
 }
 JAMOTABLE = {
     'ㄱ': '0', 'ㄴ': '1', 'ㄷ': '2', 'ㄹ': '3', 'ㅁ': '4', 'ㅂ': '5', 'ㅅ': '6', 'ㅇ': '7', 'ㅈ': '8', 'ㅊ': '9',
@@ -203,6 +211,16 @@ def parse_to_regex(jamo_tup):
     ret_val += '$'
     return ret_val
 
+def get_search_json(word_regex, page_num, fetch_num, column_name):
+		counts_per_page = fetch_num if (fetch_num != 0) else 15
+		order_column_name = column_name if (column_name != "") else 'word_string'
+		start_index = counts_per_page * (page_num - 1)
+		result = db.session.execute(RAWQUERY['get_search_json'], regex=word_regex, start_index=start_index, column_name=order_column_name, counts_per_page=counts_per_page).fetchall()
+		ret_val = {
+			'word_count': len(result),
+			'dict':result
+		}
+		return json.dumps(ret_val)
 
 def word_insert(word):
     db.session.add(WordAll(word))
@@ -262,7 +280,7 @@ def get_candidate_json(page_num, fetch_num, column_name):
       }
       candidate_data.append(row)
 
-    return candidate_data
+    return json.dumps(candidate_data)
 
 def get_admin_json(page_num, fetch_num, recent):
     # recent : 0 -> 신고시간, 1 -> 신고 많이 받은 순서
@@ -285,10 +303,7 @@ def get_admin_json(page_num, fetch_num, recent):
       }
       admin_data.append(row)
 
-    return admin_data
-
-def get_search_json(word_regex, page_num, column_name):
-    return False
+    return json.dumps(admin_data)
 
 def word_report(word_id, report_type, report_detail):
     report(word_id, report_type, report_detail)
@@ -340,7 +355,7 @@ def get_word_json(word_id, tag_count):
     word_data = get_word_data(word_id)
     tag = tag_fetch(word_id, tag_count)
     word_data['tag'] = tag
-    return word_data
+    return json.dumps(word_data)
 
 def tag_insert(word_id, tag):
     if redis_c.zscore(word_id, tag) is None:
