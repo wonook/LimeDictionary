@@ -114,11 +114,9 @@ RAWQUERY = {
     FROM candidate_word
     '''),
     'get_report': text('''
-    SELECT report_name, word_string, report_detail, count(*) as report_count
-    FROM report_log JOIN report_class ON report_log.report_type = report_class.report_type
-    JOIN word_all ON report_log.word_id = word_all.word_id
-    GROUP BY report_log.word_id
-    ORDER BY :column_name ASC
+    SELECT report_name, word_string, report_detail, reported
+    FROM (report_log NATURAL JOIN report_class) NATURAL JOIN word_all
+    ORDER BY :column_name DESC
     LIMIT :page_num, :fetch_num
     '''),
     'get_report_count': text('''
@@ -146,12 +144,15 @@ RAWQUERY = {
     'elapse_time': [text('UPDATE rank_log SET elapsed_date = elapsed_date + 1'),
                     text('DELETE FROM word_all WHERE elapsed_date >= 30')],
     'get_search_json': text('''
-        SELECT word_rank.word_id AS word_id, word_all.word_string AS word_string, rank_good, rank_bad, viewed, fresh_rate
-        FROM (word_all NATURAL JOIN word_rank)
+        SELECT word_id, word_string, rank_good, rank_bad, viewed, fresh_rate
+        FROM (word_all NATURAL JOIN word_search) NATURAL JOIN word_rank
         WHERE (word_all.word_id IN (SELECT word_id FROM word_search AS search WHERE (search.word_parsed REGEXP :regex)))
-        ORDER BY (:column_name)
-        LIMIT (:start_index), (:counts_per_page)
-        ''')
+        ORDER BY :column_name :desc
+        LIMIT :start_index, :counts_per_page
+        '''),
+    'get_search_length': text('''
+    SELECT count(*) FROM word_search WHERE word_parsed REGEXP :regex
+    ''')
 }
 JAMOTABLE = {
     'ㄱ': '0', 'ㄴ': '1', 'ㄷ': '2', 'ㄹ': '3', 'ㅁ': '4', 'ㅂ': '5', 'ㅅ': '6', 'ㅇ': '7', 'ㅈ': '8', 'ㅊ': '9',
@@ -224,15 +225,24 @@ def parse_to_regex(jamo_tup):
     return ret_val
 
 
-def get_search_json(word_regex, page_num, fetch_num, column_name):
+def get_search_json(word_regex, page_num, fetch_num, column_name, desc=True):
+    '''desc_text = 'DESC' if desc else 'ASC'
     counts_per_page = fetch_num if (fetch_num != 0) else 15
     order_column_name = column_name if (column_name != "") else 'word_string'
     start_index = counts_per_page * (page_num - 1)
-    result = db.session.execute(RAWQUERY['get_search_json'], regex=word_regex, start_index=start_index,
-                                column_name=order_column_name, counts_per_page=counts_per_page).fetchall()
+    result = db.session.execute(RAWQUERY['get_search_json'],
+                                regex=word_regex,
+                                start_index=start_index,
+                                column_name=order_column_name,
+                                desc=desc_text,
+                                counts_per_page=counts_per_page).fetchall()
+    word_count는 regexp에 대응되는 전체 word의 갯수입니다. 아까처럼 하면 fetch_num과 같은 값이 나올것 같네요'''
+
+    word_count = db.session.execute(RAWQUERY['get_search_length'],
+                                    regex=word_regex).scalar()
     ret_val = {
-        'word_count': len(result),
-        'dict': result
+        'word_count': word_count,
+        'dict': word_search(word_regex, page_num, fetch_num, column_name, desc)
     }
     return json.dumps(ret_val)
 
@@ -289,10 +299,7 @@ def candidate_report(word_id, report_type, report_detail):
 
 
 def get_candidate_json(page_num, fetch_num, column_name, desc=True):
-    if desc:
-        desc_text = 'DESC'
-    else:
-        desc_text = 'ASC'
+    desc_text = 'DESC' if desc else 'ASC'
 
     candidate_result = db.engine.execute(RAWQUERY['get_candidate'],
                                          column_name=column_name,
@@ -318,27 +325,26 @@ def get_candidate_json(page_num, fetch_num, column_name, desc=True):
 
 
 def get_admin_json(page_num, fetch_num, recent):
-    # recent : 0 -> 신고시간, 1 -> 신고 많이 받은 순서
-    # 좀 모호한데....
-    column_name = 'report_count'
-    if recent == 0:
-        column_name = 'report_id'
+    column_name = 'reported' if recent == 0 else 'report_id'
 
-    admin_result = db.engine.execute(RAWQUERY['get_report'], column_name=column_name, page_num=page_num * fetch_num,
+    admin_result = db.engine.execute(RAWQUERY['get_report'],
+                                     column_name=column_name,
+                                     page_num=(page_num - 1) * fetch_num,
                                      fetch_num=fetch_num)
-    count_result = db.engine.execute(RAWQUERY['get_report_count']).first()
+    count_result = db.engine.execute(RAWQUERY['get_report_count']).scalar()
     admin_data = {
-        'report_count': count_result[0],
-        'admins': []
+        'report_count': count_result,
     }
+    report_words = list()
     for row in admin_result:
         data = {
             'report_name': row[0],
             'word_string': row[1],
             'report_detail': row[2]
         }
-        admin_data.append(row)
+        report_words.append(data)
 
+    admin_data['report_words'] = report_words
     return json.dumps(admin_data)
 
 
@@ -367,10 +373,8 @@ def word_view(word_id):
 
 
 def word_search(word_regex, fetch_start, fetch_num, column_name, desc=True):
-    if desc:
-        desc_text = 'DESC'
-    else:
-        desc_text = 'ASC'
+    desc_text = 'DESC' if desc else 'ASC'
+
     result = db.engine.execute(RAWQUERY['word_search'],
                                word=word_regex,
                                column_name=column_name,
