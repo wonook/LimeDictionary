@@ -2,13 +2,22 @@
 <div class="header-section">
 	<div class="row header-row">
 		<div class="span12 masthead">
-			<h1 class="heading">Welcome Home.</h1>
+			<h1 class="heading">LimeDictionary</h1>
 		</div>
+	</div>
+	<div class="row header-row">
+		<form class="col-lg-6" ng-submit="search()" name="searchForm">
+    		<div class="form-group">
+      			<input type="text" class="form-control" ng-model="searchQuery" placeholder="Search for...">
+   			    <button type="submit" class="btn btn-default">Go!</button>
+    		</div><!-- /input-group -->
+    	</form>
 	</div>
 </div>
 <div class="header-push">
 </div>
+<br/><br/><br/>
 
 <div>
-	<h3><a href="/blog">Check out my blog</a></h3>
+	<h4>{{ instructions }}</h4>
 </div>

@@ -3,7 +3,11 @@
 /* Controllers */
 
 function IndexController($scope) {
-	
+	$scope.instructions = "위에서 단어를 검색하세요!";
+
+	$scope.search = function() {
+		console.log($scope.searchQuery);
+	}
 }
 
 function AboutController($scope) {
