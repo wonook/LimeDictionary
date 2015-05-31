@@ -1,8 +1,9 @@
 from app import db, redis_c
-import os, json
+import os
 import redis
 import json
 from sqlalchemy.sql import text
+
 
 class WordAll(db.Model):
     word_id = db.Column(db.Integer, primary_key=True)
@@ -21,6 +22,7 @@ class WordSearch(db.Model):
     def __init__(self, word_id, word_parsed):
         self.word_id = word_id
         self.word_parsed = word_parsed
+
 
 class CandidateWord(db.Model):
     word_id = db.Column(db.Integer, db.ForeignKey('word_all.word_id', ondelete='CASCADE'), primary_key=True)
@@ -80,9 +82,11 @@ class RankLog(db.Model):
 
 RAWQUERY = {
     'word_upvote': [text('UPDATE word_rank SET rank_good = rank_good + 1 WHERE word_id = :word_id'),
-                    text('UPDATE rank_log SET rank_good = rank_good + 1 WHERE word_id = :word_id and elapsed_date = 0')],
+                    text(
+                        'UPDATE rank_log SET rank_good = rank_good + 1 WHERE word_id = :word_id and elapsed_date = 0')],
     'word_downvote': [text('UPDATE word_rank SET rank_bad = rank_bad + 1 WHERE word_id = :word_id'),
-                      text('UPDATE rank_log SET rank_bad = rank_bad + 1 WHERE word_id = :word_id and elapsed_date = 0')],
+                      text(
+                          'UPDATE rank_log SET rank_bad = rank_bad + 1 WHERE word_id = :word_id and elapsed_date = 0')],
     'word_view': [text('UPDATE word_rank SET viewed = viewed + 1 WHERE word_id = :word_id'),
                   text('UPDATE rank_log SET viewed = viewed + 1 WHERE word_id = :word_id and elapsed_date = 0')],
     'word_search': text('''
@@ -142,12 +146,12 @@ RAWQUERY = {
     'elapse_time': [text('UPDATE rank_log SET elapsed_date = elapsed_date + 1'),
                     text('DELETE FROM word_all WHERE elapsed_date >= 30')],
     'get_search_json': text('''
-		SELECT word_rank.word_id AS word_id, word_all.word_string AS word_string, rank_good, rank_bad, viewed, fresh_rate 
-		FROM (word_all NATURAL JOIN word_rank) 
-		WHERE (word_all.word_id IN (SELECT word_id FROM word_search AS search WHERE (search.word_parsed REGEXP :regex))) 
-		ORDER BY (:column_name) 
-		LIMIT (:start_index), (:counts_per_page)
-		''')
+        SELECT word_rank.word_id AS word_id, word_all.word_string AS word_string, rank_good, rank_bad, viewed, fresh_rate
+        FROM (word_all NATURAL JOIN word_rank)
+        WHERE (word_all.word_id IN (SELECT word_id FROM word_search AS search WHERE (search.word_parsed REGEXP :regex)))
+        ORDER BY (:column_name)
+        LIMIT (:start_index), (:counts_per_page)
+        ''')
 }
 JAMOTABLE = {
     'ㄱ': '0', 'ㄴ': '1', 'ㄷ': '2', 'ㄹ': '3', 'ㅁ': '4', 'ㅂ': '5', 'ㅅ': '6', 'ㅇ': '7', 'ㅈ': '8', 'ㅊ': '9',
@@ -166,18 +170,21 @@ JAMOPARSE = [
                             "ㄿ", "ㅀ", "ㅁ", "ㅂ", "ㅄ", "ㅅ", "ㅆ", "ㅇ", "ㅈ", "ㅊ", "ㅋ", "ㅌ", "ㅍ", "ㅎ"]]
 ]
 
+
 def parse_char(c):
     pos = ord(c) - 0xac00
     last = pos % 28
-    middle = ((pos-last)//28) % 21
-    first = (((pos-last)//28)-middle)//21
+    middle = ((pos - last) // 28) % 21
+    first = (((pos - last) // 28) - middle) // 21
     return JAMOPARSE[0][first] + JAMOPARSE[1][middle] + JAMOPARSE[2][last]
+
 
 def parse_string(s):
     ret_val = ''
     for c in s:
         ret_val += parse_char(c)
     return ret_val
+
 
 def parse_jlist(lst):
     if '*' in lst:
@@ -188,6 +195,7 @@ def parse_jlist(lst):
     for c in [JAMOTABLE[x] for x in lst]:
         ret_val += c
     return ret_val + ']'
+
 
 def parse_to_regex(jamo_tup):
     """
@@ -215,20 +223,24 @@ def parse_to_regex(jamo_tup):
     ret_val += '$'
     return ret_val
 
+
 def get_search_json(word_regex, page_num, fetch_num, column_name):
-		counts_per_page = fetch_num if (fetch_num != 0) else 15
-		order_column_name = column_name if (column_name != "") else 'word_string'
-		start_index = counts_per_page * (page_num - 1)
-		result = db.session.execute(RAWQUERY['get_search_json'], regex=word_regex, start_index=start_index, column_name=order_column_name, counts_per_page=counts_per_page).fetchall()
-		ret_val = {
-			'word_count': len(result),
-			'dict':result
-		}
-		return json.dumps(ret_val)
+    counts_per_page = fetch_num if (fetch_num != 0) else 15
+    order_column_name = column_name if (column_name != "") else 'word_string'
+    start_index = counts_per_page * (page_num - 1)
+    result = db.session.execute(RAWQUERY['get_search_json'], regex=word_regex, start_index=start_index,
+                                column_name=order_column_name, counts_per_page=counts_per_page).fetchall()
+    ret_val = {
+        'word_count': len(result),
+        'dict': result
+    }
+    return json.dumps(ret_val)
+
 
 def word_insert(word):
     db.session.add(WordAll(word))
     db.session.commit()
+
 
 def word_candidate_insert(word):
     w = WordAll(word)
@@ -238,6 +250,7 @@ def word_candidate_insert(word):
     db.session.commit()
     redis_c.set('id_' + str(w.word_id), word)
 
+
 def word_candidate_move(word_id):
     db.session.add(WordSearch(word_id, parse_string(get_word(str(word_id)))))
     db.session.commit()
@@ -245,11 +258,14 @@ def word_candidate_move(word_id):
     db.session.commit()
     db.engine.execute(RAWQUERY['word_candidate_move'], word_id=word_id)
 
+
 def word_candidate_upvote(word_id):
     db.engine.execute(RAWQUERY['word_candidate_upvote'], word_id=word_id)
 
+
 def word_candidate_downvote(word_id):
     db.engine.execute(RAWQUERY['word_candidate_downvote'], word_id=word_id)
+
 
 def word_search_insert(word):
     w = WordAll(word)
@@ -261,13 +277,16 @@ def word_search_insert(word):
     db.session.commit()
     redis_c.set('id_' + str(w.word_id), word)
 
+
 def report(word_id, report_type, report_detail):
     db.session.add(ReportLog(word_id, report_type, report_detail))
     db.session.commit()
     db.engine.execute(RAWQUERY['report'], word_id=word_id)
 
+
 def candidate_report(word_id, report_type, report_detail):
     report(word_id, report_type, report_detail)
+
 
 def get_candidate_json(page_num, fetch_num, column_name, desc=True):
     if desc:
@@ -282,7 +301,7 @@ def get_candidate_json(page_num, fetch_num, column_name, desc=True):
                                          fetch_num=fetch_num)
     count_result = db.engine.execute(RAWQUERY['get_candidate_count']).scalar()
     candidate_data = {
-      'word_count': count_result,
+        'word_count': count_result,
     }
 
     candidate_words = list()
@@ -297,47 +316,55 @@ def get_candidate_json(page_num, fetch_num, column_name, desc=True):
 
     return json.dumps(candidate_data)
 
+
 def get_admin_json(page_num, fetch_num, recent):
     # recent : 0 -> 신고시간, 1 -> 신고 많이 받은 순서
     # 좀 모호한데....
     column_name = 'report_count'
     if recent == 0:
-      column_name = 'report_id'
+        column_name = 'report_id'
 
-    admin_result = db.engine.execute(RAWQUERY['get_report'], column_name=column_name, page_num=page_num * fetch_num, fetch_num=fetch_num)
+    admin_result = db.engine.execute(RAWQUERY['get_report'], column_name=column_name, page_num=page_num * fetch_num,
+                                     fetch_num=fetch_num)
     count_result = db.engine.execute(RAWQUERY['get_report_count']).first()
     admin_data = {
-      'report_count': count_result[0],
-      'admins':[]
+        'report_count': count_result[0],
+        'admins': []
     }
     for row in admin_result:
-      data = {
-        'report_name':row[0],
-        'word_string':row[1],
-        'report_detail':row[2]
-      }
-      admin_data.append(row)
+        data = {
+            'report_name': row[0],
+            'word_string': row[1],
+            'report_detail': row[2]
+        }
+        admin_data.append(row)
 
     return json.dumps(admin_data)
 
+
 def word_report(word_id, report_type, report_detail):
     report(word_id, report_type, report_detail)
+
 
 def word_delete(word_id):
     db.engine.execute(RAWQUERY['word_delete'], word_id=word_id)
     redis_c.delete('id_' + str(word_id))
 
+
 def word_upvote(word_id):
     db.engine.execute(RAWQUERY['word_upvote'][0], word_id=word_id)
     db.engine.execute(RAWQUERY['word_upvote'][1], word_id=word_id)
+
 
 def word_downvote(word_id):
     db.engine.execute(RAWQUERY['word_downvote'][0], word_id=word_id)
     db.engine.execute(RAWQUERY['word_downvote'][1], word_id=word_id)
 
+
 def word_view(word_id):
     db.engine.execute(RAWQUERY['word_view'][0], word_id=word_id)
     db.engine.execute(RAWQUERY['word_view'][1], word_id=word_id)
+
 
 def word_search(word_regex, fetch_start, fetch_num, column_name, desc=True):
     if desc:
@@ -362,15 +389,18 @@ def word_search(word_regex, fetch_start, fetch_num, column_name, desc=True):
         })
     return ret_val
 
+
 def get_word(word_id_str):
     return redis_c.get('id_' + word_id_str).decode('utf-8')
+
 
 def get_word_id(word_str):
     result = db.engine.execute(RAWQUERY['get_word_id'], word_str=word_str).first()
     if result is None:
-      return -1
+        return -1
     else:
-      return result[0]
+        return result[0]
+
 
 def get_word_data(word_id):
     result = db.engine.execute(RAWQUERY['get_word_data'], word_id=word_id).first()
@@ -384,35 +414,42 @@ def get_word_data(word_id):
     }
     return word_data
 
+
 def get_word_json(word_id, tag_count):
     word_data = get_word_data(word_id)
     tag = tag_fetch(word_id, tag_count)
     word_data['tag'] = tag
     return json.dumps(word_data)
 
+
 def tag_insert(word_id, tag):
     if redis_c.zscore(word_id, tag) is None:
         redis_c.zadd(word_id, 1, tag)
+
 
 def tag_upvote(word_id, tag):
     if redis_c.zscore(word_id, tag) is not None:
         redis_c.zincrby(word_id, tag)
 
+
 def tag_downvote(word_id, tag):
     if redis_c.zscore(word_id, tag) is not None:
         redis_c.zincrby(word_id, tag, -1)
 
+
 def tag_fetch(word_id, fetch_num):
     ret_val = list()
-    for (tag_id, val) in redis_c.zrange(word_id, 0, fetch_num-1, desc=True, withscores=True):
+    for (tag_id, val) in redis_c.zrange(word_id, 0, fetch_num - 1, desc=True, withscores=True):
         ret_val.append({
             'tag_id': int(tag_id),
             'tag_rank': val
         })
     return ret_val
 
+
 def update_fresh_rate():
     db.engine.execute(RAWQUERY['fresh_rate'])
+
 
 def elapse_time():
     db.engine.execute(RAWQUERY['elapse_time'][0])
