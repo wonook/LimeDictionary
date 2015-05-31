@@ -85,7 +85,7 @@ RAWQUERY = {
     'word_view': [text('UPDATE word_rank SET viewed = viewed + 1 WHERE word_id = :word_id'),
                   text('UPDATE rank_log SET viewed = viewed + 1 WHERE word_id = :word_id and elapsed_date = 0')],
     'word_search': text('''
-    SELECT word_id, word_string, rank_good, rank_bad, viewed, fresh_rate, reported
+    SELECT word_id, word_string, rank_good, rank_bad, viewed, fresh_rate
     FROM (word_search NATURAL JOIN word_all) NATURAL JOIN word_rank
     WHERE word_parsed REGEXP :word ORDER BY :column_name :desc
     LIMIT :fetch_start, :fetch_num
@@ -248,8 +248,15 @@ def word_search(word_regex, fetch_start, fetch_num, column_name, desc=True):
                                fetch_num=fetch_num)
     ret_val = list()
     for row in result.fetchall():
-        ret_val.append(row)
-    return result.fetchall()
+        ret_val.append({
+            'word_id': row['word_id'],
+            'word_string': row['word_string'],
+            'rank_good': row['rank_good'],
+            'rank_bad': row['rank_bad'],
+            'viewed': row['viewed'],
+            'fresh_rate': row['fresh_rate']
+        })
+    return ret_val
 
 def get_word(word_id_str):
     return redis_c.get('id_' + word_id_str).decode('utf-8')
@@ -279,8 +286,13 @@ def tag_downvote(word_id, tag):
         redis_c.zincrby(word_id, tag, -1)
 
 def tag_fetch(word_id, fetch_num):
-    for (id, val) in redis_c.zrange(word_id, 0, fetch_num-1, desc=True, withscores=True):
-        print(get_word(id.decode('utf-8')), val)
+    ret_val = list()
+    for (tag_id, val) in redis_c.zrange(word_id, 0, fetch_num-1, desc=True, withscores=True):
+        ret_val.append({
+            'tag_id': int(tag_id),
+            'tag_rank': val
+        })
+    return ret_val
 
 def update_fresh_rate():
     db.engine.execute(RAWQUERY['fresh_rate'])
