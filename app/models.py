@@ -395,7 +395,11 @@ def word_search(word_regex, fetch_start, fetch_num, column_name, desc=True):
 
 
 def get_word(word_id_str):
-    return redis_c.get('id_' + word_id_str).decode('utf-8')
+    ret_val = redis_c.get('id_' + word_id_str)
+    if ret_val is not None:
+        return redis_c.get('id_' + word_id_str).decode('utf-8')
+    else:
+        return None
 
 
 def get_word_id(word_str):

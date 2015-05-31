@@ -49,7 +49,9 @@ def search_json():
 @app.route('/api/word/<int:word_id>', methods=['GET'])
 def word_json(word_id):
     # word_id = request.args.get('id')
-    return models.get_word_json(word_id, 5)
+    jss = models.get_word_json(word_id, 15)
+    print (jss)
+    return jss
 
 @app.route('/api/candidate', methods=['GET'])
 def candidate_json():
