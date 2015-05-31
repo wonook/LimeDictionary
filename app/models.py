@@ -85,9 +85,10 @@ RAWQUERY = {
     'word_view': [text('UPDATE word_rank SET viewed = viewed + 1 WHERE word_id = :word_id'),
                   text('UPDATE rank_log SET viewed = viewed + 1 WHERE word_id = :word_id and elapsed_date = 0')],
     'word_search': text('''
-    SELECT word_id, word_string, rank_good, rank_bad, viewed, fresh_rate, reported
+    SELECT word_id, word_string, rank_good, rank_bad, viewed, fresh_rate
     FROM (word_search NATURAL JOIN word_all) NATURAL JOIN word_rank
-    WHERE word_parsed REGEXP :word
+    WHERE word_parsed REGEXP :word ORDER BY :column_name :desc
+    LIMIT :fetch_start, :fetch_num
     '''),
     'get_word_id': text('''
     SELECT word_id
@@ -195,6 +196,9 @@ def parse_to_regex(jamo_tup):
             continue
         elif tup == '*':
             ret_val += '*'
+            continue
+        elif not isinstance(tup, list):
+            ret_val += parse_char(tup)
             continue
         (fst, mid, lst) = (tup[0], tup[1], tup[2])
         ret = parse_jlist(fst) + parse_jlist(mid) + parse_jlist(lst)
@@ -309,10 +313,28 @@ def word_view(word_id):
     db.engine.execute(RAWQUERY['word_view'][0], word_id=word_id)
     db.engine.execute(RAWQUERY['word_view'][1], word_id=word_id)
 
-def word_search(word_regex):
-    result = db.engine.execute(RAWQUERY['word_search'], word=word_regex)
-    for word in result.fetchmany(10):
-        print(word)
+def word_search(word_regex, fetch_start, fetch_num, column_name, desc=True):
+    if desc:
+        desc_text = 'DESC'
+    else:
+        desc_text = 'ASC'
+    result = db.engine.execute(RAWQUERY['word_search'],
+                               word=word_regex,
+                               column_name=column_name,
+                               desc=desc_text,
+                               fetch_start=fetch_start,
+                               fetch_num=fetch_num)
+    ret_val = list()
+    for row in result.fetchall():
+        ret_val.append({
+            'word_id': row['word_id'],
+            'word_string': row['word_string'],
+            'rank_good': row['rank_good'],
+            'rank_bad': row['rank_bad'],
+            'viewed': row['viewed'],
+            'fresh_rate': row['fresh_rate']
+        })
+    return ret_val
 
 def get_word(word_id_str):
     return redis_c.get('id_' + word_id_str).decode('utf-8')
@@ -344,7 +366,6 @@ def get_word_json(word_id, tag_count):
 
 def tag_insert(word_id, tag):
     if redis_c.zscore(word_id, tag) is None:
-        print('add {0} {1}'.format(word_id, tag))
         redis_c.zadd(word_id, 1, tag)
 
 def tag_upvote(word_id, tag):
@@ -356,8 +377,13 @@ def tag_downvote(word_id, tag):
         redis_c.zincrby(word_id, tag, -1)
 
 def tag_fetch(word_id, fetch_num):
-    for (id, val) in redis_c.zrange(word_id, 0, fetch_num-1, desc=True, withscores=True):
-        print(get_word(id.decode('utf-8')), val)
+    ret_val = list()
+    for (tag_id, val) in redis_c.zrange(word_id, 0, fetch_num-1, desc=True, withscores=True):
+        ret_val.append({
+            'tag_id': int(tag_id),
+            'tag_rank': val
+        })
+    return ret_val
 
 def update_fresh_rate():
     db.engine.execute(RAWQUERY['fresh_rate'])
