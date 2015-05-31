@@ -23,7 +23,7 @@ def add_data():
 def read_data():
     form = DataAddForm()
     if form.validate_on_submit():
-        models.word_search(models.parse_string(form.filename.data))
+        models.word_search(models.parse_string(form.filename.data), 0, 14, 'fresh_rate')
     return render_template('add_file.html', title='read csv', form=form)
 
 @app.route('/redis', methods=['GET', 'POST'])

@@ -87,7 +87,8 @@ RAWQUERY = {
     'word_search': text('''
     SELECT word_id, word_string, rank_good, rank_bad, viewed, fresh_rate, reported
     FROM (word_search NATURAL JOIN word_all) NATURAL JOIN word_rank
-    WHERE word_parsed REGEXP :word
+    WHERE word_parsed REGEXP :word ORDER BY :column_name :desc
+    LIMIT :fetch_start, :fetch_num
     '''),
     'get_word_data': text('''
     SELECT * FROM word_rank WHERE word_id = :word_id
@@ -167,6 +168,9 @@ def parse_to_regex(jamo_tup):
         elif tup == '*':
             ret_val += '*'
             continue
+        elif not isinstance(tup, list):
+            ret_val += parse_char(tup)
+            continue
         (fst, mid, lst) = (tup[0], tup[1], tup[2])
         ret = parse_jlist(fst) + parse_jlist(mid) + parse_jlist(lst)
         ret_val += ret
@@ -231,10 +235,21 @@ def word_view(word_id):
     db.engine.execute(RAWQUERY['word_view'][0], word_id=word_id)
     db.engine.execute(RAWQUERY['word_view'][1], word_id=word_id)
 
-def word_search(word_regex):
-    result = db.engine.execute(RAWQUERY['word_search'], word=word_regex)
-    for word in result.fetchmany(10):
-        print(word)
+def word_search(word_regex, fetch_start, fetch_num, column_name, desc=True):
+    if desc:
+        desc_text = 'DESC'
+    else:
+        desc_text = 'ASC'
+    result = db.engine.execute(RAWQUERY['word_search'],
+                               word=word_regex,
+                               column_name=column_name,
+                               desc=desc_text,
+                               fetch_start=fetch_start,
+                               fetch_num=fetch_num)
+    ret_val = list()
+    for row in result.fetchall():
+        ret_val.append(row)
+    return result.fetchall()
 
 def get_word(word_id_str):
     return redis_c.get('id_' + word_id_str).decode('utf-8')
@@ -253,7 +268,6 @@ def get_word_data(word_id):
 
 def tag_insert(word_id, tag):
     if redis_c.zscore(word_id, tag) is None:
-        print('add {0} {1}'.format(word_id, tag))
         redis_c.zadd(word_id, 1, tag)
 
 def tag_upvote(word_id, tag):
