@@ -1,9 +1,19 @@
 from app import app, models
-from flask import render_template, flash, redirect, request
+from flask import render_template, request, abort, jsonify
 from .forms import DataAddForm
 from flask import make_response
+import urllib.parse
 
-
+DESC_TABLE = {
+    'id': False,
+    'word_string': False,
+    'fresh_rate': True,
+    'rank_good': True,
+    'rank_bad': True,
+    'viewed': True,
+    'vote': True,
+    'report': True
+}
 
 @app.route('/')
 @app.route('/index')
@@ -34,24 +44,48 @@ def redis_add():
         models.tag_fetch(partdata[0], int(partdata[2]))
     return render_template('add_file.html', title='add redis', form=form)
 
+
 @app.route('/api/result', methods=['GET'])
 def result_json():
-    pass
+    word_regex = urllib.parse.unquote(request.args.get('word'))
+    page_num = int(request.args.get('page'))
+    page_num = 0 if page_num is None else int(page_num)
+    column_name = request.args.get('sort')
+    column_name = 'word_string' if column_name is None else column_name
+    return models.get_search_json(word_regex, page_num, 15,
+                                  column_name, DESC_TABLE[column_name])
 
 @app.route('/api/admin', methods=['GET'])
 def admin_json():
-    pass
+    page_num = request.args.get('page')
+    recent = request.args.get('recent')
+    return models.get_admin_json(int(page_num), 15, int(recent))
 
 @app.route('/api/search', methods=['POST'])
 def search_json():
-    pass
+    if not request.json or 'word' not in request.json:
+        abort(400)
+    word_regex = request.json('word')
+    page_num = request.json('page')
+    page_num = 0 if page_num is None else int(page_num)
+    column_name = request.json('sort')
+    column_name = 'word_string' if column_name is None else column_name
+    return models.get_search_json(word_regex, page_num, 15,
+                                  column_name, DESC_TABLE[column_name])
 
-@app.route('/api/word/<int:word_id>', methods=['GET'])
-def word_json(word_id):
-    # word_id = request.args.get('id')
-    jss = models.get_word_json(word_id, 15)
-    return jss
+@app.route('/api/word', methods=['GET'])
+def word_json():
+    word_id = int(request.args.get('id'))
+    models.word_view(word_id)
+    return models.get_word_json(word_id, 15)
 
 @app.route('/api/candidate', methods=['GET'])
 def candidate_json():
-    pass
+    page_num = int(request.args.get('page'))
+    column_name = request.args.get('sort')
+    return models.get_candidate_json(page_num, 15,
+                                     column_name, DESC_TABLE[column_name])
+
+@app.errorhandler(404)
+def not_found(error):
+    return make_response(jsonify({'error': 'Not found'}), 404)

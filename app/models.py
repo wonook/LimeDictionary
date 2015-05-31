@@ -437,7 +437,7 @@ def get_word_data(word_id):
 def get_word_json(word_id, tag_count):
     word_data = get_word_data(word_id)
     if word_data is None:
-        return jsonify(None)
+        return jsonify(dict())
     tag = tag_fetch(word_id, tag_count)
     word_data['tag'] = tag
     return jsonify(word_data)
