@@ -3,7 +3,7 @@ import os
 import redis
 import json
 from sqlalchemy.sql import text
-
+from flask import jsonify
 
 class WordAll(db.Model):
     word_id = db.Column(db.Integer, primary_key=True)
@@ -244,7 +244,7 @@ def get_search_json(word_regex, page_num, fetch_num, column_name, desc=True):
         'word_count': word_count,
         'dict': word_search(word_regex, page_num, fetch_num, column_name, desc)
     }
-    return json.dumps(ret_val)
+    return jsonify(ret_val)
 
 
 def word_insert(word):
@@ -321,7 +321,7 @@ def get_candidate_json(page_num, fetch_num, column_name, desc=True):
 
     candidate_data['candidate_words'] = candidate_words
 
-    return json.dumps(candidate_data)
+    return jsonify(candidate_data)
 
 
 def get_admin_json(page_num, fetch_num, recent):
@@ -345,7 +345,7 @@ def get_admin_json(page_num, fetch_num, recent):
         report_words.append(data)
 
     admin_data['report_words'] = report_words
-    return json.dumps(admin_data)
+    return jsonify(admin_data)
 
 
 def word_report(word_id, report_type, report_detail):
@@ -427,7 +427,7 @@ def get_word_json(word_id, tag_count):
     word_data = get_word_data(word_id)
     tag = tag_fetch(word_id, tag_count)
     word_data['tag'] = tag
-    return json.dumps(word_data)
+    return jsonify(word_data)
 
 
 def tag_insert(word_id, tag):
