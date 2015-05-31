@@ -1,5 +1,5 @@
 from app import app, models
-from flask import render_template, flash, redirect
+from flask import render_template, flash, redirect, request
 from .forms import DataAddForm
 from flask import make_response
 
@@ -33,3 +33,24 @@ def redis_add():
         partdata = form.filename.data.partition(',')
         models.tag_fetch(partdata[0], int(partdata[2]))
     return render_template('add_file.html', title='add redis', form=form)
+
+@app.route('/api/result', methods=['GET'])
+def result_json():
+    pass
+
+@app.route('/api/admin', methods=['GET'])
+def admin_json():
+    pass
+
+@app.route('/api/search', methods=['POST'])
+def search_json():
+    pass
+
+@app.route('/api/word', methods=['GET'])
+def word_json():
+    word_id = request.args.get('id')
+    return models.get_word_json(int(word_id), 5)
+
+@app.route('/api/candidate', methods=['GET'])
+def candidate_json():
+    pass
