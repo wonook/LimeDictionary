@@ -1,5 +1,5 @@
 from app import db, redis_c
-import os
+import os, json
 import redis
 from sqlalchemy.sql import text
 
@@ -98,17 +98,17 @@ RAWQUERY = {
     'get_word_data': text('''
     SELECT * FROM word_rank WHERE word_id = :word_id
     '''),
-    'get_candidate':text('''
-    SELECT candidate_word.word_id, word_string, vote
-    FROM candidate_word JOIN word_all ON candidate_word.word_id = word_all.word_id
-    ORDER BY :column_name ASC
+    'get_candidate': text('''
+    SELECT word_id, word_string, vote
+    FROM candidate_word NATURAL JOIN word_all
+    ORDER BY :column_name :desc
     LIMIT :page_num, :fetch_num
     '''),
-    'get_candidate_count':text('''
+    'get_candidate_count': text('''
     SELECT count(*)
     FROM candidate_word
     '''),
-    'get_report':text('''
+    'get_report': text('''
     SELECT report_name, word_string, report_detail, count(*) as report_count
     FROM report_log JOIN report_class ON report_log.report_type = report_class.report_type
     JOIN word_all ON report_log.word_id = word_all.word_id
@@ -116,12 +116,12 @@ RAWQUERY = {
     ORDER BY :column_name ASC
     LIMIT :page_num, :fetch_num
     '''),
-    'get_report_count':text('''
+    'get_report_count': text('''
     SELECT count(*)
     FROM report_log
     '''),
-    'word_candidate_upvote':text('UPDATE candidate_word SET vote = vote + 1 WHERE word_id = :word_id'),
-    'word_candidate_downvote':text('UPDATE candidate_word SET vote = vote - 1 WHERE word_id = :word_id'),
+    'word_candidate_upvote': text('UPDATE candidate_word SET vote = vote + 1 WHERE word_id = :word_id'),
+    'word_candidate_downvote': text('UPDATE candidate_word SET vote = vote - 1 WHERE word_id = :word_id'),
     'word_candidate_move': text('DELETE FROM word_candidate WHERE word_id = :word_id'),
     'report': text('UPDATE word_all SET reported = reported + 1 WHERE word_id = :word_id'),
     'word_delete': text('DELETE FROM word_all WHERE word_id = :word_id'),
@@ -251,22 +251,33 @@ def report(word_id, report_type, report_detail):
 def candidate_report(word_id, report_type, report_detail):
     report(word_id, report_type, report_detail)
 
-def get_candidate_json(page_num, fetch_num, column_name):
-    candidate_result = db.engine.execute(RAWQUERY['get_candidate'], column_name=column_name, page_num=page_num * fetch_num, fetch_num=fetch_num)
-    count_result = db.engine.execute(RAWQUERY['get_candidate_count']).first()
-    candidate_data = {
-      'word_count': count_result[0],
-      'candidates':[]
-    }
-    for row in candidate_result:
-      data = {
-        'word_id':row[0],
-        'word_string':row[1],
-        'vote':row[2]
-      }
-      candidate_data.append(row)
+def get_candidate_json(page_num, fetch_num, column_name, desc=True):
+    if desc:
+        desc_text = 'DESC'
+    else:
+        desc_text = 'ASC'
 
-    return candidate_data
+    candidate_result = db.engine.execute(RAWQUERY['get_candidate'],
+                                         column_name=column_name,
+                                         desc=desc_text,
+                                         page_num=(page_num - 1) * fetch_num,
+                                         fetch_num=fetch_num)
+    count_result = db.engine.execute(RAWQUERY['get_candidate_count']).scalar()
+    candidate_data = {
+      'word_count': count_result,
+    }
+
+    candidate_words = list()
+    for row in candidate_result:
+        candidate_words.append({
+            'word_id': row[0],
+            'word_string': row[1],
+            'vote': row[2]
+        })
+
+    candidate_data['candidate_words'] = candidate_words
+
+    return json.dumps(candidate_data)
 
 def get_admin_json(page_num, fetch_num, recent):
     # recent : 0 -> 신고시간, 1 -> 신고 많이 받은 순서
@@ -362,7 +373,7 @@ def get_word_json(word_id, tag_count):
     word_data = get_word_data(word_id)
     tag = tag_fetch(word_id, tag_count)
     word_data['tag'] = tag
-    return word_data
+    return json.dumps(word_data)
 
 def tag_insert(word_id, tag):
     if redis_c.zscore(word_id, tag) is None:
