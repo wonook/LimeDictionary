@@ -10,6 +10,12 @@ angular.module('angularFlaskServices', ['ngResource'])
 			}
 		});
 	})
+	.factory('Word', function($resource) {
+		return $resource('api/word/')
+	})
+	.factory('Candidate', function($resource) {
+		return $resource('api/candidate/')
+	})
 ;
 
 
