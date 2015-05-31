@@ -311,6 +311,10 @@ def get_candidate_json(page_num, fetch_num, column_name, desc=True):
         'word_count': count_result,
     }
 
+    if count_result == 0:
+        candidate_data['candidate_words'] = list()
+        return jsonify(candidate_data)
+
     candidate_words = list()
     for row in candidate_result:
         candidate_words.append({
@@ -335,6 +339,11 @@ def get_admin_json(page_num, fetch_num, recent):
     admin_data = {
         'report_count': count_result,
     }
+
+    if count_result == 0:
+        admin_data['report_words'] = list()
+        return jsonify(admin_data)
+
     report_words = list()
     for row in admin_result:
         data = {
@@ -412,6 +421,8 @@ def get_word_id(word_str):
 
 def get_word_data(word_id):
     result = db.engine.execute(RAWQUERY['get_word_data'], word_id=word_id).first()
+    if result is None:
+        return None
     word_data = {
         'word_id': word_id,
         'word_string': get_word(str(word_id)),
