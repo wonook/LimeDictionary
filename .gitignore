@@ -10,3 +10,4 @@ _mailinglist
 *.egg-info
 .idea/*
 .idea
+.vimrc
