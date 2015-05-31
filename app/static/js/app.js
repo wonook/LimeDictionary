@@ -1,34 +1,38 @@
 'use strict';
 
-angular.module('AngularFlask', ['angularFlaskServices'])
-	.config(['$routeProvider', '$locationProvider',
-		function($routeProvider, $locationProvider) {
-		$routeProvider
-		.when('/', {
+angular.module('AngularFlask', ['angularFlaskServices', 'ui.router'])
+	.config(['$locationProvider', '$stateProvider', '$urlRouterProvider',
+		function($locationProvider, $stateProvider, $urlRouterProvider) {
+		$stateProvider
+		.state('home', {
+			url: '/',
 			templateUrl: 'static/partials/landing.html',
 			controller: IndexController
 		})
-		.when('/about', {
+		.state('about', {
+			url: '/about',
 			templateUrl: 'static/partials/about.html',
 			controller: AboutController
 		})
-		.when('/post', {
+		.state('post', {
+			url: '/post',
 			templateUrl: 'static/partials/post-list.html',
 			controller: PostListController
 		})
-		.when('/post/:postId', {
+		.state('post.show', {
+			url: '/post/:postId',
 			templateUrl: '/static/partials/post-detail.html',
 			controller: PostDetailController
 		})
 		/* Create a "/blog" route that takes the user to the same place as "/post" */
-		.when('/blog', {
+		.state('blog', {
+			url: '/blog',
 			templateUrl: 'static/partials/post-list.html',
 			controller: PostListController
 		})
-		.otherwise({
-			redirectTo: '/'
-		})
 		;
+
+		$urlRouterProvider.otherwise('home');
 
 		$locationProvider.html5Mode(true);
 	}])
