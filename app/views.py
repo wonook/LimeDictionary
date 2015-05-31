@@ -46,10 +46,10 @@ def admin_json():
 def search_json():
     pass
 
-@app.route('/api/word', methods=['GET'])
-def word_json():
-    word_id = request.args.get('id')
-    return models.get_word_json(int(word_id), 5)
+@app.route('/api/word/<int:word_id>', methods=['GET'])
+def word_json(word_id):
+    # word_id = request.args.get('id')
+    return models.get_word_json(word_id, 5)
 
 @app.route('/api/candidate', methods=['GET'])
 def candidate_json():
