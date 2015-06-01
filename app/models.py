@@ -415,15 +415,14 @@ def word_view(word_id):
     db.engine.execute(RAWQUERY['word_view'][1], word_id=word_id, date=datetoday)
 
 
-def word_search(word_regex, fetch_start, fetch_num, column_name, desc=True):
+def word_search(word_regex, page_num, fetch_num, column_name, desc=True):
     desc_text = 'DESC' if desc else 'ASC'
 
     result = db.engine.execute(RAWQUERY['word_search_' + desc_text],
                                word=word_regex,
-                               column_name=column_name,
-                               fetch_start=fetch_start,
-                               fetch_num=fetch_num)
+                               column_name=column_name)
     ret_val = list()
+    i = 0
     for row in result.fetchall():
         ret_val.append({
             'word_id': row['word_id'],
@@ -433,6 +432,9 @@ def word_search(word_regex, fetch_start, fetch_num, column_name, desc=True):
             'viewed': row['viewed'],
             'fresh_rate': row['fresh_rate']
         })
+        i += 1
+        if i >= fetch_num:
+            break
     return ret_val
 
 
