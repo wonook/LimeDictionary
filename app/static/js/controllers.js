@@ -100,8 +100,32 @@ function WordIndexController($scope) {
 
 }
 
-function WordShowController($scope) {
+function WordShowController($scope, Word, $stateParams) {
+	//var wordQuery = Word.get({ id: $stateParams.id }, function(word) {
+	//	$scope.word = word;
+	//});
 
+	$scope.upvote = function() {
+
+	}
+
+	$scope.downvote = function() {
+
+	}
+
+	$scope.updateTags = function() {
+
+	}
+
+	$scope.word = {
+		fresh_rate: 0,
+		rank_bad: 0,
+		rank_good: 0,
+		tag: [ ],
+		viewed: 6,
+		word_id: 2,
+		word_string: "가깝"
+	}
 }
 
 function CandidateController($scope) {

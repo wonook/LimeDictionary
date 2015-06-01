@@ -6,48 +6,48 @@ angular.module('AngularFlask', ['angularFlaskServices', 'ui.router', 'ngTagsInpu
 			$stateProvider
 			.state('home', {
 				url: '/',
-				templateUrl: 'static/partials/landing.html',
+				templateUrl: '/static/partials/landing.html',
 				controller: IndexController
 			})
 			.state('about', {
 				url: '/about',
-				templateUrl: 'static/partials/about.html',
+				templateUrl: '/static/partials/about.html',
 				controller: AboutController
 			})
 			.state('words', {
 				url: '/words',
-				templateUrl: 'static/partials/word_index.html',
+				templateUrl: '/static/partials/word_index.html',
 				controller: WordIndexController
 			})
-			.state('words.show', {
+			.state('wordsshow', {
 				url: '/words/{id}',
-				templateUrl: 'static/partials/word_show.html',
+				templateUrl: '/static/partials/word_show.html',
 				controller: WordShowController
 			})
 			.state('candidates', {
 				url: '/candidates',
-				templateUrl: 'static/partials/candidates.html',
+				templateUrl: '/static/partials/candidates.html',
 				controller: CandidateController
 			})
 			.state('post', {
 				url: '/post',
-				templateUrl: 'static/partials/post-list.html',
+				templateUrl: '/static/partials/post-list.html',
 				controller: PostListController
 			})
 			.state('post.show', {
-				url: '/post/:postId',
+				url: '/:postId',
 				templateUrl: '/static/partials/post-detail.html',
 				controller: PostDetailController
 			})
 			/* Create a "/blog" route that takes the user to the same place as "/post" */
 			.state('blog', {
 				url: '/blog',
-				templateUrl: 'static/partials/post-list.html',
+				templateUrl: '/static/partials/post-list.html',
 				controller: PostListController
 			})
 			;
 
-			$urlRouterProvider.otherwise('home');
+			$urlRouterProvider.otherwise('/');
 
 			$locationProvider.html5Mode(true);
 	}])
