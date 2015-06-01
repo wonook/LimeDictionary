@@ -18,11 +18,27 @@ angular.module('angularFlaskServices', ['ngResource'])
 			}
 		});
 	})
+    .factory('Search', function($resource) {
+        return $resource('/api/search', {}, {
+            query: {
+                method: 'POST',
+                params: { word: [] }
+            }
+        })
+    })
+    .factory('Candidate', function($resource) {
+        return $resource('/api/candidate', {}, {
+            query: {
+                method: 'GET',
+                params: { page: 1, sort: "word_string" }
+            }
+        })
+    })
 	.factory('Admin', function($resource) {
 		return $resource('/api/admin', {}, {
 			query: {
 				method: 'GET',
-				params: { page: 0, recent: 0 }
+				params: { page: 1, recent: 0 }
 			}
 		})
 	})

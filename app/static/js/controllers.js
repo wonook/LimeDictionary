@@ -2,12 +2,16 @@
 
 /* Controllers */
 
-function IndexController($scope, $state, $filter) {
+function IndexController($scope, $state, $filter, Search) {
 	$scope.instructions = "위에서 단어를 검색하세요!";
 
+    $scope.words = {};
+
 	$scope.search = function() {
-		console.log($scope.searchQuery);
-		$state.go('words');
+        var wordsQuery = Search.save({ word: parsed_letters }, function(words) {
+        	$scope.words = words;
+        });
+		$state.go('home.search');
 	}
 
 	var getid = function() {
@@ -65,10 +69,24 @@ function IndexController($scope, $state, $filter) {
 		return this.filter(function(i) {return a.indexOf(i) < 0;});
 	};
 
+    function cutDownPart(raw_letters) {
+        var key, tags_array, value;
+        tags_array = [];
+        if (raw_letters !== []) {
+            for (key in raw_letters) {
+                value = raw_letters[key];
+                if(value["text"] != null){
+                    tags_array.push(value["text"]);
+                }
+            }
+        }
+        return tags_array;
+    }
+
 	$scope.count = 1;
 	$scope.nextLetter = function() {
 		if($scope.whichLetter === 2) { //종성
-			buffer.push($scope.letters.diff(prev));
+			buffer.push(cutDownPart($scope.letters.diff(prev)));
 			parsed_letters.push(buffer);
 			buffer = [];
 			console.log("parsed letters:", parsed_letters);
@@ -81,7 +99,7 @@ function IndexController($scope, $state, $filter) {
 				$scope.whichLetter = 2;
 				$scope.nextLetter();
 			} else {
-				buffer.push($scope.letters.diff(prev));
+				buffer.push(cutDownPart($scope.letters.diff(prev)));
 				//console.log("buffer:", buffer);
 				$scope.whichLetter++;
 			}
@@ -120,9 +138,9 @@ function WordIndexController($scope) {
 }
 
 function WordShowController($scope, Word, $stateParams) {
-	//var wordQuery = Word.get({ id: $stateParams.id }, function(word) {
-	//	$scope.word = word;
-	//});
+	var wordQuery = Word.get({ id: $stateParams.id }, function(word) {
+		$scope.word = word;
+	});
 
 	$scope.upvote = function() {
 
@@ -136,32 +154,23 @@ function WordShowController($scope, Word, $stateParams) {
 
 	}
 
-	$scope.word = {
-		fresh_rate: 0,
-		rank_bad: 0,
-		rank_good: 0,
-		tag: [ ],
-		viewed: 6,
-		word_id: 2,
-		word_string: "가깝"
-	}
+    $scope.tags = [];
 }
 
-function CandidateController($scope) {
+function CandidateController($scope, Candidate) {
+    $scope.sort = "word_string";
 
+    var candidateQuery = Candidate.get({ page: $stateParams.page, sort: $scope.sort }, function(candidate) {
+    	$scope.candidates = candidate;
+    });
 }
 
 function AdminController($scope, Admin) {
 	$scope.recent = 0;
 
-	//var adminQuery = Admin.get({ page: $stateParams.page, recent = $scope.recent }, function(admin) {
-	//	$scope.reports = admin;
-	//})
-
-	$scope.reports = {
-		report_count: 0,
-		report_words: [ ]
-	};
+	var adminQuery = Admin.get({ page: $stateParams.page, recent = $scope.recent }, function(admin) {
+		$scope.reports = admin;
+	});
 }
 
 //function PostListController($scope, Post) {
