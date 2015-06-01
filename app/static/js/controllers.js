@@ -16,9 +16,9 @@ function IndexController($scope, $state, $filter) {
 
 	var header_letter = function() {
 		return [
-			{ id: getid(), text: 'ㄱ' }, { id: getid(), text: 'ㄲ' }, { id: getid(), text: 'ㄴ' }, { id: getid(), text: 'ㄷ' }, { id: getid(), text: 'ㄸ' }, { id: getid(), text: 'ㄹ' }, { id: getid(), text: 'ㅁ' },
-			{ id: getid(), text: 'ㅂ' }, { id: getid(), text: 'ㅃ' }, { id: getid(), text: 'ㅅ' }, { id: getid(), text: 'ㅆ' }, { id: getid(), text: 'ㅇ' }, { id: getid(), text: 'ㅈ' }, { id: getid(), text: 'ㅉ' },
-			{ id: getid(), text: 'ㅊ' }, { id: getid(), text: 'ㅋ' }, { id: getid(), text: 'ㅌ' }, { id: getid(), text: 'ㅍ' }, { id: getid(), text: 'ㅎ' }, { id: getid(), text: 'X' }
+			{ id: getid(), text: '*' }, { id: getid(), text: 'ㄱ' }, { id: getid(), text: 'ㄲ' }, { id: getid(), text: 'ㄴ' }, { id: getid(), text: 'ㄷ' }, { id: getid(), text: 'ㄸ' }, { id: getid(), text: 'ㄹ' },
+			{ id: getid(), text: 'ㅁ' }, { id: getid(), text: 'ㅂ' }, { id: getid(), text: 'ㅃ' }, { id: getid(), text: 'ㅅ' }, { id: getid(), text: 'ㅆ' }, { id: getid(), text: 'ㅇ' }, { id: getid(), text: 'ㅈ' },
+			{ id: getid(), text: 'ㅉ' }, { id: getid(), text: 'ㅊ' }, { id: getid(), text: 'ㅋ' }, { id: getid(), text: 'ㅌ' }, { id: getid(), text: 'ㅍ' }, { id: getid(), text: 'ㅎ' }, { id: getid(), text: 'X' }
 		];
 	}
 	var hl = header_letter();
@@ -44,7 +44,7 @@ function IndexController($scope, $state, $filter) {
 	$scope.loadLetters = function(query) {
 		if($scope.whichLetter === 0) {
 			if (query == ' ') return hl;
-			return $filter('filter')(vl, {text: query});
+			return $filter('filter')(vl, {text: query}, function(actual, expected) { actual >= expected });
 		} else if ($scope.whichLetter === 1) {
 			if (query == ' ') return vl;
 			return $filter('filter')(vl, {text: query});
@@ -57,18 +57,37 @@ function IndexController($scope, $state, $filter) {
 	$scope.letters = [
 		{ id: getid(), text: '글자1:' }
 	];
+	var prev = $scope.letters.slice();
+	var buffer = [];
+	var parsed_letters = [];
+
+	Array.prototype.diff = function(a) {
+		return this.filter(function(i) {return a.indexOf(i) < 0;});
+	};
 
 	$scope.count = 1;
 	$scope.nextLetter = function() {
-		if($scope.whichLetter === 2) {
+		if($scope.whichLetter === 2) { //종성
+			buffer.push($scope.letters.diff(prev));
+			parsed_letters.push(buffer);
+			buffer = [];
+			console.log("parsed letters:", parsed_letters);
 			$scope.count ++;
 			$scope.letters.push({ id: getid(), text: '글자' + $scope.count + ':' });
 			$scope.whichLetter = 0;
 		}
-		else {
-			$scope.whichLetter++;
+		else { //초성/중성
+			if($scope.letters[$scope.letters.length - 1].text == '*') {
+				$scope.whichLetter = 2;
+				$scope.nextLetter();
+			} else {
+				buffer.push($scope.letters.diff(prev));
+				//console.log("buffer:", buffer);
+				$scope.whichLetter++;
+			}
 		}
 		updatemessage();
+		prev = $scope.letters.slice();
 		return;
 	}
 
