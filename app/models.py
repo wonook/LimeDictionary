@@ -100,13 +100,11 @@ RAWQUERY = {
     SELECT word_id, word_string, rank_good, rank_bad, viewed, fresh_rate
     FROM (word_search NATURAL JOIN word_all) NATURAL JOIN word_rank
     WHERE word_parsed REGEXP :word ORDER BY :column_name DESC
-    LIMIT :fetch_start , :fetch_num
     '''),
     'word_search_ASC': text('''
     SELECT word_id, word_string, rank_good, rank_bad, viewed, fresh_rate
     FROM (word_search NATURAL JOIN word_all) NATURAL JOIN word_rank
     WHERE word_parsed REGEXP :word ORDER BY :column_name ASC
-    LIMIT :fetch_start , :fetch_num
     '''),
     'get_word_id': text('''
     SELECT word_id
