@@ -130,7 +130,7 @@ RAWQUERY = {
     SELECT count(*)
     FROM candidate_word
     '''),
-    'get_cand_word_json':text('SELECT vote FROM '),
+    'get_cand_word_json':text('SELECT vote FROM word_candidate WHERE word_id = :word_id'),
     'get_report': text('''
     SELECT report_name, word_string, report_detail, word_id, reported
     FROM (report_log NATURAL JOIN report_class) NATURAL JOIN word_all
