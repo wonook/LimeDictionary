@@ -47,13 +47,13 @@ function IndexController($scope, $state, $filter, Search) {
 	var fl = footer_letter();
 	$scope.loadLetters = function(query) {
 		if($scope.whichLetter === 0) {
-			if (query == ' ') return hl;
-			return $filter('filter')(vl, {text: query}, function(actual, expected) { actual >= expected });
+			if (query.trim() == '') return hl;
+			return $filter('filter')(hl, {text: query}, function(actual, expected) { actual >= expected });
 		} else if ($scope.whichLetter === 1) {
-			if (query == ' ') return vl;
+			if (query.trim() == '') return vl;
 			return $filter('filter')(vl, {text: query});
 		} else {
-			if (query == ' ') return fl;
+			if (query.trim() == '') return fl;
 			return $filter('filter')(fl, {text: query});
 		}
 	}
@@ -163,6 +163,14 @@ function CandidateController($scope, Candidate, $stateParams) {
     var candidateQuery = Candidate.get({ page: $stateParams.page, sort: $scope.sort }, function(candidate) {
     	$scope.candidates = candidate;
     });
+
+    $scope.upvote = function() {
+
+    }
+
+    $scope.downvote = function() {
+
+    }
 }
 
 function AdminController($scope, Admin, $stateParams) {

@@ -8,7 +8,7 @@
     </thead>
     <tbody ng-repeat="candidate in candidates.candidate_words ">
         <tr>
-            <td><h4><a ui-sref="wordsshow({id: {{word.word_id}}})">{{ candidate.word_string }}</a></h4></td>
+            <td><h4><a ui-sref="wordsshow({id: {{candidate.word_id}}})">{{ candidate.word_string }}</a></h4></td>
             <td>
                 {{candidate.vote}}
                 <span class="glyphicon glyphicon-thumbs-up" ng-click="upvote()"></span>
