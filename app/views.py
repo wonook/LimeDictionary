@@ -156,6 +156,7 @@ def update_json():
         models.update_fresh_rate()
     elif call_func == 'elapse_time':
         models.elapse_time()
+    return jsonify({'ok': 'ok'})
 
 @app.errorhandler(404)
 def not_found(error):
