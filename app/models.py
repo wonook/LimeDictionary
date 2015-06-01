@@ -153,7 +153,7 @@ RAWQUERY = {
     WHERE word_rank.word_id = rank_log.word_id) > 0,
     (SELECT SUM(point) FROM rank_log WHERE word_rank.word_id = rank_log.word_id), 0)'''),
                    text('''SELECT AVG(fresh_rate) FROM
-                   (SELECT fresh_rate FROM word_rank ORDER BY fresh_rate DESC LIMIT (:top_n_count)) as top_fresh'''),
+                   (SELECT fresh_rate FROM word_rank ORDER BY fresh_rate DESC LIMIT :top_n_count) as top_fresh'''),
                    text('UPDATE word_rank SET fresh_rate = (100 * fresh_rate / (:top_rate))')],
     'elapse_time': [text('DELETE FROM rank_log WHERE DATEDIFF(CURRENT_DATE(), elapsed_date) >= 30'),
                     text('''
