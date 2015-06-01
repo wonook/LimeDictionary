@@ -292,7 +292,7 @@ def word_candidate_upvote(word_id):
     if result[0] >= 4 : #5 이상이면 단어 등록
         word_candidate_move(word_id)
     else:
-    db.engine.execute(RAWQUERY['word_candidate_upvote'], word_id=word_id)
+        db.engine.execute(RAWQUERY['word_candidate_upvote'], word_id=word_id)
 
 
 def word_candidate_downvote(word_id):
