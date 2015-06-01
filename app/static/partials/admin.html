@@ -17,6 +17,7 @@
             <span class="label label-danger">{{ report.report_name }}</span>
             <b>{{ report.word_string }}</b>
             <span>{{ report.report_detail }}</span>
+            <span class="glyphicon glyphicon-trash" ng-click="deleteword(report.word_id)"></span>
         </li>
     </ul>
 </div>

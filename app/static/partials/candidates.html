@@ -24,8 +24,8 @@
             <td><h4><a ui-sref="wordsshow({id: {{candidate.word_id}}})">{{ candidate.word_string }}</a></h4></td>
             <td>
                 {{candidate.vote}}
-                <span class="glyphicon glyphicon-thumbs-up" ng-click="upvote()"></span>
-                <span class="glyphicon glyphicon-thumbs-down" ng-click="downvote()"></span>
+                <span class="glyphicon glyphicon-thumbs-up" ng-click="upvote(candidate.word_id)"></span>
+                <span class="glyphicon glyphicon-thumbs-down" ng-click="downvote(candidate.word_id)"></span>
             </td>
         </tr>
     </tbody>

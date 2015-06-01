@@ -33,6 +33,14 @@ angular.module('angularFlaskServices', ['ngResource'])
 			}
 		})
 	})
+    .factory('Update', function($resource) {
+        return $resource('/api/update', {}, {
+            query: {
+                method: 'POST',
+                params: { callfunc: "", obj: [] }
+            }
+        })
+    })
 ;
 
 

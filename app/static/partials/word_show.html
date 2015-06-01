@@ -13,8 +13,8 @@
             <tr>
             	<td>{{ word.fresh_rate }}</td>
             	<td>
-            	    {{ word.rank_good }} <span class="glyphicon glyphicon-thumbs-up" ng-click="upvote()"></span> /
-            	    {{ word.rank_bad }} <span class="glyphicon glyphicon-thumbs-down" ng-click="downvote()"></span>
+            	    {{ word.rank_good }} <span class="glyphicon glyphicon-thumbs-up" ng-click="upvote(word.id)"></span> /
+            	    {{ word.rank_bad }} <span class="glyphicon glyphicon-thumbs-down" ng-click="downvote(word.id)"></span>
             	</td>
             	<td>{{ word.viewed }}</td>
 			</tr>

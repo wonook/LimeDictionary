@@ -142,12 +142,12 @@ function WordShowController($scope, Word, $stateParams) {
 		$scope.word = word;
 	});
 
-	$scope.upvote = function() {
+	$scope.upvote = function(id) {
+        var upvoteQuery = Update.save({ callfunc: "word_upvote", obj: [ id ]}, function(response) {});
+    }
 
-	}
-
-	$scope.downvote = function() {
-
+	$scope.downvote = function(id) {
+        var downvoteQuery = Update.save({ callfunc: "word_downvote", obj: [ id ]}, function(response) {});
 	}
 
 	$scope.updateTags = function() {
@@ -157,7 +157,7 @@ function WordShowController($scope, Word, $stateParams) {
     $scope.tags = [];
 }
 
-function CandidateController($scope, Candidate, $stateParams) {
+function CandidateController($scope, Candidate, $stateParams, Update) {
     $scope.sort = "word_string";
     $scope.page = $stateParams.page;
     $scope.totalpages = 0;
@@ -180,16 +180,23 @@ function CandidateController($scope, Candidate, $stateParams) {
         return candidateQuery;
     }
 
-    $scope.upvote = function() {
-
+    $scope.upvote = function(id) {
+        var upvoteQuery = Update.save({ callfunc: "word_candidate_upvote", obj: [ id ]}, function(response) {});
     }
 
-    $scope.downvote = function() {
-
+    $scope.downvote = function(id) {
+        var downvoteQuery = Update.save({ callfunc: "word_candidate_downvote", obj: [ id ]}, function(response) {});
     }
 }
 
-function AdminController($scope, Admin, $stateParams) {
+function NewCandidateController($scope, Update) {
+    $scope.wordstring = '';
+    $scope.submit = function() {
+        var newQuery = Update.save({ callfunc: "word_candidate_insert", obj: [ $scope.wordstring ] }, function(response) {});
+    }
+}
+
+function AdminController($scope, Admin, $stateParams, Update) {
 	$scope.recent = 0;
     $scope.page = $stateParams.page;
     $scope.totalpages = 0;
@@ -201,6 +208,10 @@ function AdminController($scope, Admin, $stateParams) {
     $scope.two = function() {
         $scope.recent = 1;
         return adminQuery;
+    }
+
+    $scope.deleteword = function(id) {
+        var deleteQuery = Update.save({ callfunc: "word_delete", obj: [id] }, function(response) {});
     }
 
     var adminQuery = Admin.get({ page: $stateParams.page, recent: $scope.recent }, function(reports) {
