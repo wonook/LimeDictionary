@@ -130,7 +130,7 @@ RAWQUERY = {
     SELECT count(*)
     FROM candidate_word
     '''),
-    'get_cand_word_json':text('SELECT vote FROM word_candidate WHERE word_id = :word_id'),
+    'get_cand_word_json':text('SELECT vote FROM candidate_word WHERE word_id = :word_id'),
     'get_report': text('''
     SELECT report_name, word_string, report_detail, word_id, reported
     FROM (report_log NATURAL JOIN report_class) NATURAL JOIN word_all
@@ -143,8 +143,8 @@ RAWQUERY = {
     '''),
     'word_candidate_upvote': text('UPDATE candidate_word SET vote = vote + 1 WHERE word_id = :word_id'),
     'word_candidate_downvote': text('UPDATE candidate_word SET vote = vote - 1 WHERE word_id = :word_id'),
-    'word_candidate_move': text('DELETE FROM word_candidate WHERE word_id = :word_id'),
-    'get_candidate_vote': text('SELECT vote FROM word_candidate WHERE word_id = :word_id'),
+    'word_candidate_move': text('DELETE FROM candidate_word WHERE word_id = :word_id'),
+    'get_candidate_vote': text('SELECT vote FROM candidate_word WHERE word_id = :word_id'),
     'report': text('UPDATE word_all SET reported = reported + 1 WHERE word_id = :word_id'),
     'word_delete': text('DELETE FROM word_all WHERE word_id = :word_id'),
     'fresh_rate': [text('''
