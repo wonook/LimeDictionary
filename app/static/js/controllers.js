@@ -157,7 +157,7 @@ function WordShowController($scope, Word, $stateParams) {
     $scope.tags = [];
 }
 
-function CandidateController($scope, Candidate) {
+function CandidateController($scope, Candidate, $stateParams) {
     $scope.sort = "word_string";
 
     var candidateQuery = Candidate.get({ page: $stateParams.page, sort: $scope.sort }, function(candidate) {
@@ -165,12 +165,12 @@ function CandidateController($scope, Candidate) {
     });
 }
 
-function AdminController($scope, Admin) {
+function AdminController($scope, Admin, $stateParams) {
 	$scope.recent = 0;
 
-	var adminQuery = Admin.get({ page: $stateParams.page, recent = $scope.recent }, function(admin) {
-		$scope.reports = admin;
-	});
+    var adminQuery = Admin.get({ page: $stateParams.page, recent: $scope.recent }, function(reports) {
+        $scope.reports = reports;
+    });
 }
 
 //function PostListController($scope, Post) {
