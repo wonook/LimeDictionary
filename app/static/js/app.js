@@ -4,20 +4,20 @@ angular.module('AngularFlask', ['angularFlaskServices', 'ui.router', 'ngTagsInpu
 	.config(['$locationProvider', '$stateProvider', '$urlRouterProvider',
 		function($locationProvider, $stateProvider, $urlRouterProvider) {
 			$stateProvider
+            .state('about', {
+                url: '/about',
+                templateUrl: '/static/partials/about.html',
+                controller: AboutController
+            })
 			.state('home', {
 				url: '/',
 				templateUrl: '/static/partials/landing.html',
 				controller: IndexController
 			})
-			.state('about', {
-				url: '/about',
-				templateUrl: '/static/partials/about.html',
-				controller: AboutController
-			})
 			.state('home.search', {
-				url: '/search',
+				url: 'search',
 				templateUrl: '/static/partials/word_index.html',
-				controller: IndexController
+				controller: WordIndexController
 			})
 			.state('wordsshow', {
 				url: '/words/{id}',

@@ -1,5 +1,6 @@
-<div ng-repeat="word in words | orderBy: 'id':true ">
-	<h4><a href="/word/{{ word.id }}">{{ word.word }}</a></h4>
+asdf
+<div ng-repeat="word in words.dict">
+	<h4><a ui-sref="wordsshow({id: {{word.word_id}}})">{{ word.word_string }}</a></h4>
 </div>
 
-<div ng-hide="words">No words to show</div>
+<div ng-hide="words.dict">No words to show</div>

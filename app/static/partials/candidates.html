@@ -1,6 +1,7 @@
 
-<div ng-repeat="word in words | orderBy: 'id':true ">
-	<h4><a href="/word/{{ word.id }}">{{ word.word_string }}</a></h4>
+<div ng-repeat="candidate in candidates.candidate_words ">
+	<h4><a href="/word/{{ candidate.id }}">{{ candidate.word_string }}</a></h4>
+    {{candidate.vote}}
 </div>
 
-<div ng-hide="words">No words to show</div>
+<div ng-hide="candidates.candidate_words">No words to show</div>
