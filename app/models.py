@@ -221,10 +221,10 @@ def parse_to_regex(jamo_tup):
         return '.*'
     ret_val = '^'
     for tup in jamo_tup:
-        if tup == ['?']:
+        if tup == ['?'] or tup == []:
             ret_val += '...'
             continue
-        elif tup == ['*'] or tup == []:
+        elif tup == ['*'] or tup == [['*']]:
             if ret_val == '^':
                 ret_val = ''
                 continue
@@ -257,6 +257,7 @@ def get_search_json(word_regex, page_num, fetch_num, column_name, desc=True):
     word_count = db.engine.execute(RAWQUERY['get_search_length'],
                                     regex=word_regex).scalar()
     ret_val = {
+        'word_regex': word_regex,
         'word_count': word_count,
         'dict': word_search(word_regex, page_num, fetch_num, column_name, desc)
     }
