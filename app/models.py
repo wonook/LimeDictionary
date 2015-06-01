@@ -86,7 +86,7 @@ class RankLog(db.Model):
 
 
 RAWQUERY = {
-    'word_log_search': text('SELECT * FROM rank_log WHERE word_id = :word_id AND elapse_date = :date'),
+    'word_log_search': text('SELECT * FROM rank_log WHERE word_id = :word_id AND elapsed_date = :date'),
     'word_upvote': [text('UPDATE word_rank SET rank_good = rank_good + 1 WHERE word_id = :word_id'),
                     text('''UPDATE rank_log SET rank_good = rank_good + 1
                     WHERE word_id = :word_id and elapsed_date = :date''')],
