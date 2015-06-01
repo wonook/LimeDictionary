@@ -106,47 +106,50 @@ def candidate_json():
 
 @app.route('/api/update', methods=['POST'])
 def update_json():
-    if not request.json:
+    if not request.json or 'call_func' not in request.json:
         abort(400)
 
-    if 'word_candidate_insert' in request.json:
-        models.word_candidate_insert(request.json['word_candidate_insert']['word'])
-    elif 'word_candidate_upvote' in request.json:
-        models.word_candidate_upvote(int(request.json['word_candidate_upvote']['word_id']))
-    elif 'word_candidate_downvote' in request.json:
-        models.word_candidate_downvote(int(request.json['word_candidate_downvote']['word_id']))
-    elif 'word_search_insert' in request.json:
-        models.word_search_insert(request.json['word_search_insert']['word'])
-    elif 'report' in request.json:
-        models.report(int(request.json['report']['word_id']),
-                      int(request.json['report']['report_type']),
-                      request.json['report']['report_detail'])
-    elif 'candidate_report' in request.json:
-        models.candidate_report(int(request.json['candidate_report']['word_id']),
-                                int(request.json['candidate_report']['report_type']),
-                                request.json['candidate_report']['report_detail'])
-    elif 'word_report' in request.json:
-        models.word_report(int(request.json['word_report']['word_id']),
-                           int(request.json['word_report']['report_type']),
-                           request.json['word_report']['report_detail'])
-    elif 'word_delete' in request.json:
-        models.word_delete(int(request.json['word_delete']['word_id']))
-    elif 'word_upvote' in request.json:
-        models.word_upvote(int(request.json['word_upvote']['word_id']))
-    elif 'word_downvote' in request.json:
-        models.word_downvote(int(request.json['word_downvote']['word_id']))
-    elif 'tag_insert' in request.json:
-        models.tag_insert(int(request.json['tag_insert']['word_id']),
-                          int(request.json['tag_insert']['tag']))
-    elif 'tag_upvote' in request.json:
-        models.tag_upvote(int(request.json['tag_upvote']['word_id']),
-                          int(request.json['tag_upvote']['tag']))
-    elif 'tag_downvote' in request.json:
-        models.tag_downvote(int(request.json['tag_downvote']['word_id']),
-                            int(request.json['tag_downvote']['tag']))
-    elif 'update_fresh_rate' in request.json:
+    call_func = request.json['call_func']
+    obj = None if 'obj' not in request.json else request.json['obj']
+
+    if call_func == 'word_candidate_insert':
+        models.word_candidate_insert(obj[0])
+    elif call_func == 'word_candidate_upvote':
+        models.word_candidate_upvote(int(obj[0]))
+    elif call_func == 'word_candidate_downvote':
+        models.word_candidate_downvote(int(obj[0]))
+    elif call_func == 'word_search_insert':
+        models.word_search_insert(obj[0])
+    elif call_func == 'report':
+        models.report(int(obj[0]),
+                      int(obj[1]),
+                      obj[2])
+    elif call_func == 'candidate_report':
+        models.candidate_report(int(obj[0]),
+                                int(obj[1]),
+                                obj[2])
+    elif call_func == 'word_report':
+        models.word_report(int(obj[0]),
+                           int(obj[1]),
+                           obj[2])
+    elif call_func == 'word_delete':
+        models.word_delete(int(obj[0]))
+    elif call_func == 'word_upvote':
+        models.word_upvote(int(obj[0]))
+    elif call_func == 'word_downvote':
+        models.word_downvote(int(obj[0]))
+    elif call_func == 'tag_insert':
+        models.tag_insert(int(obj[0]),
+                          int(obj[1]))
+    elif call_func == 'tag_upvote':
+        models.tag_upvote(int(obj[0]),
+                          int(obj[1]))
+    elif call_func == 'tag_downvote':
+        models.tag_downvote(int(obj[0]),
+                            int(obj[1]))
+    elif call_func == 'update_fresh_rate':
         models.update_fresh_rate()
-    elif 'elapse_time' in request.json:
+    elif call_func == 'elapse_time':
         models.elapse_time()
 
 @app.errorhandler(404)

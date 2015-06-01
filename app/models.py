@@ -86,7 +86,7 @@ class RankLog(db.Model):
 
 
 RAWQUERY = {
-    'word_log_search': text('SELECT * FROM rank_log WHERE word_id = :word_id AND elapse_date = :date'),
+    'word_log_search': text('SELECT * FROM rank_log WHERE word_id = :word_id AND elapsed_date = :date'),
     'word_upvote': [text('UPDATE word_rank SET rank_good = rank_good + 1 WHERE word_id = :word_id'),
                     text('''UPDATE rank_log SET rank_good = rank_good + 1
                     WHERE word_id = :word_id and elapsed_date = :date''')],
@@ -100,13 +100,11 @@ RAWQUERY = {
     SELECT word_id, word_string, rank_good, rank_bad, viewed, fresh_rate
     FROM (word_search NATURAL JOIN word_all) NATURAL JOIN word_rank
     WHERE word_parsed REGEXP :word ORDER BY :column_name DESC
-    LIMIT :fetch_start , :fetch_num
     '''),
     'word_search_ASC': text('''
     SELECT word_id, word_string, rank_good, rank_bad, viewed, fresh_rate
     FROM (word_search NATURAL JOIN word_all) NATURAL JOIN word_rank
     WHERE word_parsed REGEXP :word ORDER BY :column_name ASC
-    LIMIT :fetch_start , :fetch_num
     '''),
     'get_word_id': text('''
     SELECT word_id
@@ -133,7 +131,7 @@ RAWQUERY = {
     FROM candidate_word
     '''),
     'get_report': text('''
-    SELECT report_name, word_string, report_detail, reported
+    SELECT report_name, word_string, report_detail, word_id, reported
     FROM (report_log NATURAL JOIN report_class) NATURAL JOIN word_all
     ORDER BY :column_name DESC
     LIMIT :page_num, :fetch_num
@@ -370,7 +368,8 @@ def get_admin_json(page_num, fetch_num, recent):
         data = {
             'report_name': row[0],
             'word_string': row[1],
-            'report_detail': row[2]
+            'report_detail': row[2],
+            'word_id': row[3]
         }
         report_words.append(data)
 
@@ -417,15 +416,14 @@ def word_view(word_id):
     db.engine.execute(RAWQUERY['word_view'][1], word_id=word_id, date=datetoday)
 
 
-def word_search(word_regex, fetch_start, fetch_num, column_name, desc=True):
+def word_search(word_regex, page_num, fetch_num, column_name, desc=True):
     desc_text = 'DESC' if desc else 'ASC'
 
     result = db.engine.execute(RAWQUERY['word_search_' + desc_text],
                                word=word_regex,
-                               column_name=column_name,
-                               fetch_start=fetch_start,
-                               fetch_num=fetch_num)
+                               column_name=column_name)
     ret_val = list()
+    i = 0
     for row in result.fetchall():
         ret_val.append({
             'word_id': row['word_id'],
@@ -435,6 +433,9 @@ def word_search(word_regex, fetch_start, fetch_num, column_name, desc=True):
             'viewed': row['viewed'],
             'fresh_rate': row['fresh_rate']
         })
+        i += 1
+        if i >= fetch_num:
+            break
     return ret_val
 
 
