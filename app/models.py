@@ -2,6 +2,7 @@ from app import db, redis_c
 import os
 import redis
 import json
+import datetime
 from sqlalchemy.sql import text
 
 class WordAll(db.Model):
@@ -65,14 +66,14 @@ class WordRank(db.Model):
 
 class RankLog(db.Model):
     word_id = db.Column(db.Integer, db.ForeignKey('word_search.word_id', ondelete='CASCADE'), primary_key=True)
-    elapsed_date = db.Column(db.SmallInteger, primary_key=True, nullable=False, autoincrement=False)
+    elapsed_date = db.Column(db.Date, primary_key=True, nullable=False, autoincrement=False)
     rank_good = db.Column(db.Integer)
     rank_bad = db.Column(db.Integer)
     viewed = db.Column(db.Integer)
 
     def __init__(self, word_id):
         self.word_id = word_id
-        self.elapsed_date = 0
+        self.elapsed_date = date.today().isoformat()
         self.rank_bad = 0
         self.rank_good = 0
         self.viewed = 0
@@ -80,11 +81,11 @@ class RankLog(db.Model):
 
 RAWQUERY = {
     'word_upvote': [text('UPDATE word_rank SET rank_good = rank_good + 1 WHERE word_id = :word_id'),
-                    text('UPDATE rank_log SET rank_good = rank_good + 1 WHERE word_id = :word_id and elapsed_date = 0')],
+                    text('UPDATE rank_log SET rank_good = rank_good + 1 WHERE word_id = :word_id and elapsed_date = '+date.today().isoformat() )],
     'word_downvote': [text('UPDATE word_rank SET rank_bad = rank_bad + 1 WHERE word_id = :word_id'),
-                      text('UPDATE rank_log SET rank_bad = rank_bad + 1 WHERE word_id = :word_id and elapsed_date = 0')],
+                      text('UPDATE rank_log SET rank_bad = rank_bad + 1 WHERE word_id = :word_id and elapsed_date = '+date.today().isoformat() )],
     'word_view': [text('UPDATE word_rank SET viewed = viewed + 1 WHERE word_id = :word_id'),
-                  text('UPDATE rank_log SET viewed = viewed + 1 WHERE word_id = :word_id and elapsed_date = 0')],
+                  text('UPDATE rank_log SET viewed = viewed + 1 WHERE word_id = :word_id and elapsed_date = '+ date.today().isoformat() )],
     'word_search': text('''
     SELECT word_id, word_string, rank_good, rank_bad, viewed, fresh_rate, reported
     FROM (word_search NATURAL JOIN word_all) NATURAL JOIN word_rank
@@ -128,7 +129,7 @@ RAWQUERY = {
     'fresh_rate': text('''
     WITH fresh_raw(word_id, rate) as
     (
-        SELECT word_id, (30 - elapsed_date) * (viewed + 10 * (rank_good + rank_bad))
+        SELECT word_id, (DATEDIFF(CURRENT_DATE(), elapsed_date)) * (viewed + 10 * (rank_good + rank_bad))
         FROM rank_log
     ), max_rate(val) as (SELECT max(rate) FROM fresh_raw)
     UPDATE word_rank SET fresh_rate =
@@ -138,8 +139,8 @@ RAWQUERY = {
         WHERE word_rank.word_id = fresh_raw.word_id
     )
     '''),
-    'elapse_time': [text('UPDATE rank_log SET elapsed_date = elapsed_date + 1'),
-                    text('DELETE FROM rank_log WHERE elapsed_date >= 30')],
+    'elapse_time':# [text('UPDATE rank_log SET elapsed_date = elapsed_date + 1'),
+                    text('DELETE FROM rank_log WHERE DATEDIFF(CURRENT_DATE(), elapsed_date) >= 30'),#],
     'get_search_json': text('''
 		SELECT word_rank.word_id AS word_id, word_all.word_string AS word_string, rank_good, rank_bad, viewed, fresh_rate 
 		FROM (word_all NATURAL JOIN word_rank) 
@@ -378,8 +379,8 @@ def update_fresh_rate():
     db.engine.execute(RAWQUERY['fresh_rate'])
 
 def elapse_time():
-    db.engine.execute(RAWQUERY['elapse_time'][0])
-    db.engine.execute(RAWQUERY['elapse_time'][1])
+    db.engine.execute(RAWQUERY['elapse_time'])#[0])
+  #  db.engine.execute(RAWQUERY['elapse_time'][1])
 
 
 def open_save_file(filename):
