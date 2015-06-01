@@ -3,8 +3,10 @@ from app import db, redis_c
 import os
 import redis
 import json
+from datetime import date
 from sqlalchemy.sql import text
 from flask import jsonify
+
 
 class WordAll(db.Model):
     word_id = db.Column(db.Integer, primary_key=True)
@@ -68,28 +70,32 @@ class WordRank(db.Model):
 
 class RankLog(db.Model):
     word_id = db.Column(db.Integer, db.ForeignKey('word_search.word_id', ondelete='CASCADE'), primary_key=True)
-    elapsed_date = db.Column(db.SmallInteger, primary_key=True, nullable=False, autoincrement=False)
+    elapsed_date = db.Column(db.Date, primary_key=True, nullable=False, autoincrement=False)
     rank_good = db.Column(db.Integer)
     rank_bad = db.Column(db.Integer)
     viewed = db.Column(db.Integer)
+    point = db.Column(db.Integer)
 
     def __init__(self, word_id):
         self.word_id = word_id
-        self.elapsed_date = 0
+        self.elapsed_date = date.today().isoformat()
         self.rank_bad = 0
         self.rank_good = 0
         self.viewed = 0
+        self.point = 0
 
 
 RAWQUERY = {
+    'word_log_search': text('SELECT * FROM rank_log WHERE word_id = :word_id AND elapse_date = :date'),
     'word_upvote': [text('UPDATE word_rank SET rank_good = rank_good + 1 WHERE word_id = :word_id'),
-                    text(
-                        'UPDATE rank_log SET rank_good = rank_good + 1 WHERE word_id = :word_id and elapsed_date = 0')],
+                    text('''UPDATE rank_log SET rank_good = rank_good + 1
+                    WHERE word_id = :word_id and elapsed_date = :date''')],
     'word_downvote': [text('UPDATE word_rank SET rank_bad = rank_bad + 1 WHERE word_id = :word_id'),
-                      text(
-                          'UPDATE rank_log SET rank_bad = rank_bad + 1 WHERE word_id = :word_id and elapsed_date = 0')],
+                      text('''UPDATE rank_log SET rank_bad = rank_bad + 1
+                      WHERE word_id = :word_id and elapsed_date = :date''')],
     'word_view': [text('UPDATE word_rank SET viewed = viewed + 1 WHERE word_id = :word_id'),
-                  text('UPDATE rank_log SET viewed = viewed + 1 WHERE word_id = :word_id and elapsed_date = 0')],
+                  text('''UPDATE rank_log SET viewed = viewed + 1
+                  WHERE word_id = :word_id and elapsed_date = :date''')],
     'word_search_DESC': text('''
     SELECT word_id, word_string, rank_good, rank_bad, viewed, fresh_rate
     FROM (word_search NATURAL JOIN word_all) NATURAL JOIN word_rank
@@ -141,21 +147,16 @@ RAWQUERY = {
     'word_candidate_move': text('DELETE FROM word_candidate WHERE word_id = :word_id'),
     'report': text('UPDATE word_all SET reported = reported + 1 WHERE word_id = :word_id'),
     'word_delete': text('DELETE FROM word_all WHERE word_id = :word_id'),
-    'fresh_rate': text('''
-    WITH fresh_raw(word_id, rate) as
-    (
-        SELECT word_id, (30 - elapsed_date) * (viewed + 10 * (rank_good + rank_bad))
-        FROM rank_log
-    ), max_rate(val) as (SELECT max(rate) FROM fresh_raw)
-    UPDATE word_rank SET fresh_rate =
-    (
-        SELECT 100 * fresh_raw.rate / max_rate.val
-        FROM fresh_raw, max_rate
-        WHERE word_rank.word_id = fresh_raw.word_id
-    )
-    '''),
-    'elapse_time': [text('UPDATE rank_log SET elapsed_date = elapsed_date + 1'),
-                    text('DELETE FROM word_all WHERE elapsed_date >= 30')],
+    'fresh_rate': [text('''
+    UPDATE ONLY word_rank
+    SET fresh_rate = (SELECT SUM(point) FROM rank_log
+    WHERE word_rank.word_id = rank_log.word_id)'''),
+                   text('SELECT AVG(fresh_rate) FROM word_rank ORDER BY fresh_rate DESC LIMIT (:top_n_count)'),
+                   text('UPDATE word_rank SET fresh_rate = (100 * fresh_rate / (:top_rate))')],
+    'elapse_time': [text('DELETE FROM rank_log WHERE DATEDIFF(CURRENT_DATE(), elapsed_date) >= 30'),
+                    text('''
+                    UPDATE rank_log
+                    SET point = (DATEDIFF(CURRENT_DATE(), elapsed_date)) * (viewed + 10 * (rank_good + rank_bad))''')],
     'get_search_json': text('''
         SELECT word_id, word_string, rank_good, rank_bad, viewed, fresh_rate
         FROM (word_all NATURAL JOIN word_search) NATURAL JOIN word_rank
@@ -255,10 +256,11 @@ def get_search_json(word_regex, page_num, fetch_num, column_name, desc=True):
     word_count는 regexp에 대응되는 전체 word의 갯수입니다. 아까처럼 하면 fetch_num과 같은 값이 나올것 같네요'''
 
     word_count = db.engine.execute(RAWQUERY['get_search_length'],
-                                    regex=word_regex).scalar()
+                                   regex=word_regex).scalar()
     ret_val = {
         'word_regex': word_regex,
         'word_count': word_count,
+        'page_num': page_num,
         'dict': word_search(word_regex, page_num, fetch_num, column_name, desc)
     }
     return jsonify(ret_val)
@@ -326,6 +328,7 @@ def get_candidate_json(page_num, fetch_num, column_name, desc=True):
     count_result = db.engine.execute(RAWQUERY['get_candidate_count']).scalar()
     candidate_data = {
         'word_count': count_result,
+        'page_num': page_num
     }
 
     if count_result == 0:
@@ -355,6 +358,7 @@ def get_admin_json(page_num, fetch_num, recent):
     count_result = db.engine.execute(RAWQUERY['get_report_count']).scalar()
     admin_data = {
         'report_count': count_result,
+        'page_num': page_num
     }
 
     if count_result == 0:
@@ -383,19 +387,34 @@ def word_delete(word_id):
     redis_c.delete('id_' + str(word_id))
 
 
+def word_log_search(word_id, datetoday):
+    log = db.engine.execute(RAWQUERY['word_log_search'],
+                            word_id=word_id,
+                            date=datetoday).first()
+    if log is None:
+        db.session.add(RankLog(word_id))
+        db.session.commit()
+
+
 def word_upvote(word_id):
+    datetoday = date.today().isoformat()
     db.engine.execute(RAWQUERY['word_upvote'][0], word_id=word_id)
-    db.engine.execute(RAWQUERY['word_upvote'][1], word_id=word_id)
+    word_log_search(word_id, datetoday)
+    db.engine.execute(RAWQUERY['word_upvote'][1], word_id=word_id, date=datetoday)
 
 
 def word_downvote(word_id):
+    datetoday = date.today().isoformat()
     db.engine.execute(RAWQUERY['word_downvote'][0], word_id=word_id)
-    db.engine.execute(RAWQUERY['word_downvote'][1], word_id=word_id)
+    word_log_search(word_id, datetoday)
+    db.engine.execute(RAWQUERY['word_downvote'][1], word_id=word_id, date=datetoday)
 
 
 def word_view(word_id):
+    datetoday = date.today().isoformat()
     db.engine.execute(RAWQUERY['word_view'][0], word_id=word_id)
-    db.engine.execute(RAWQUERY['word_view'][1], word_id=word_id)
+    word_log_search(word_id, datetoday)
+    db.engine.execute(RAWQUERY['word_view'][1], word_id=word_id, date=datetoday)
 
 
 def word_search(word_regex, fetch_start, fetch_num, column_name, desc=True):
@@ -486,7 +505,17 @@ def tag_fetch(word_id, fetch_num):
 
 
 def update_fresh_rate():
-    db.engine.execute(RAWQUERY['fresh_rate'])
+    top_n_count = 10
+    trans = db.engine.begin()
+    try:
+        db.engine.execute(RAWQUERY['fresh_rate'][0])  # 일단 포인트 합계를 넣어둠
+        result = db.engine.execute(RAWQUERY['fresh_rate'][1],
+                                   top_n_count=top_n_count).scalar()  # 상위 top_n_count개의 포인트 합계의 평균을 추출
+        db.engine.execute(RAWQUERY['fresh_rate'][2], top_rate=result)  # 추출한 평균을 기준으로 fresh_rate 업데이트
+        trans.commit()
+    except:
+        trans.rollback()
+        raise
 
 
 def elapse_time():
