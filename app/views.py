@@ -96,7 +96,6 @@ def search_json():
 @app.route('/api/word', methods=['GET'])
 def word_json():
     word_id = int(request.args.get('id'))
-    models.word_view(word_id)
     return models.get_word_json(word_id, 15)
 
 
