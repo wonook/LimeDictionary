@@ -169,14 +169,15 @@ function WordShowController($scope, Word, $stateParams, Update, ngDialog) {
         }
         return tags_array;
     }
-    $scope.updateTags = function(id) {
-        var param = [id].concat(cutDownPart($scope.tags));
+    $scope.updateTags = function() {
+        var param = [$scope.word.word_id].concat(cutDownPart($scope.tags));
 		console.log({ call_func: "tag_insert", obj: param});
         Update.save({ call_func: "tag_insert", obj: param}, function(response) {});
         return refresh();
     }
 
     $scope.tagupvote = function(id) {
+		console.log({ call_func: "tag_upvote", obj: [ $scope.word.word_id, id ]});
         Update.save({ call_func: "tag_upvote", obj: [ $scope.word.word_id, id ]}, function(response) {});
         return refresh();
     }

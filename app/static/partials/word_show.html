@@ -25,9 +25,9 @@
     <span ng-repeat="tag in word.tag">
         <span class="label label-success">{{tag.tag_string}} {{tag.tag_rank}}</span>
         <span class="glyphicon glyphicon-thumbs-up" ng-click="tagupvote(tag.tag_id)"></span>
-        <span class="glyphicon glyphicon-thumbs-down" ng-click="tagdownvote(tag.tad_id)"></span>
+        <span class="glyphicon glyphicon-thumbs-down" ng-click="tagdownvote(tag.tag_id)"></span>
     </span>
-    <form ng-submit="updateTags(word.word_id)" name="tagForm">
+    <form ng-submit="updateTags()" name="tagForm">
 	    <tags-input data-ng-model="tags" display-property="tag_string" placeholder="태그 추가하기" min-length="1">
         </tags-input>
    	    <button type="submit" class="btn btn-default">Go!</button>
