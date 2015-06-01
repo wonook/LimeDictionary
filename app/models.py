@@ -149,8 +149,9 @@ RAWQUERY = {
     'word_delete': text('DELETE FROM word_all WHERE word_id = :word_id'),
     'fresh_rate': [text('''
     UPDATE word_rank
-    SET fresh_rate = (SELECT SUM(point) FROM rank_log
-    WHERE word_rank.word_id = rank_log.word_id)'''),
+    SET fresh_rate = IF((SELECT count(*) FROM rank_log
+    WHERE word_rank.word_id = rank_log.word_id) > 0,
+    (SELECT SUM(point) FROM rank_log WHERE word_rank.word_id = rank_log.word_id), 0)'''),
                    text('''SELECT AVG(fresh_rate) FROM
                    (SELECT fresh_rate FROM word_rank ORDER BY fresh_rate DESC LIMIT (:top_n_count)) as top_fresh'''),
                    text('UPDATE word_rank SET fresh_rate = (100 * fresh_rate / (:top_rate))')],
@@ -534,6 +535,7 @@ def tag_fetch(word_id, fetch_num):
 
 
 def update_fresh_rate():
+    elapse_time()
     top_n_count = 20
 
     db.engine.execute(RAWQUERY['fresh_rate'][0])  # 일단 포인트 합계를 넣어둠
