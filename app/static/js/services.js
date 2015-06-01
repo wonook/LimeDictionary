@@ -37,7 +37,7 @@ angular.module('angularFlaskServices', ['ngResource'])
         return $resource('/api/update', {}, {
             query: {
                 method: 'POST',
-                params: { callfunc: "", obj: [] }
+                params: { call_func: "", obj: [] }
             }
         })
     })
