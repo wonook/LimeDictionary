@@ -171,6 +171,7 @@ function WordShowController($scope, Word, $stateParams, Update, ngDialog) {
     }
     $scope.updateTags = function(id) {
         var param = [id].concat(cutDownPart($scope.tags));
+		console.log({ call_func: "tag_insert", obj: param});
         Update.save({ call_func: "tag_insert", obj: param}, function(response) {});
         return refresh();
     }
@@ -180,6 +181,7 @@ function WordShowController($scope, Word, $stateParams, Update, ngDialog) {
         return refresh();
     }
     $scope.tagdownvote = function(id) {
+		console.log({ call_func: "tag_downvote", obj: [ $scope.word.word_id, id ]});
         Update.save({ call_func: "tag_downvote", obj: [ $scope.word.word_id, id ]}, function(response) {});
         return refresh();
     }
@@ -193,6 +195,7 @@ function WordShowController($scope, Word, $stateParams, Update, ngDialog) {
 
 	$scope.report_detail = '';
 	$scope.addReport = function(type) {
+		console.log({ call_func: "report", obj: [ $scope.word.word_id, type[0], type[1] ] }});
 		Update.save({ call_func: "report", obj: [ $scope.word.word_id, type[0], type[1] ] }, function(response) {});
 	}
 }
@@ -224,6 +227,7 @@ function CandidateController($scope, Candidate, $stateParams, Update) {
     }
 
     $scope.upvote = function(id) {
+		console.log({ call_func: "word_candidate_upvote", obj: [ id ]});
         Update.save({ call_func: "word_candidate_upvote", obj: [ id ]}, function(response) {});
         return refresh();
     }
@@ -235,6 +239,7 @@ function CandidateController($scope, Candidate, $stateParams, Update) {
 
     $scope.wordstring = '';
     $scope.createCandidate = function() {
+		console.log({ call_func: "word_candidate_insert", obj: [ $scope.wordstring ] });
         Update.save({ call_func: "word_candidate_insert", obj: [ $scope.wordstring ] }, function(response) {});
         return refresh();
     }
