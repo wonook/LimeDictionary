@@ -239,7 +239,7 @@ def get_search_json(word_regex, page_num, fetch_num, column_name, desc=True):
                                 counts_per_page=counts_per_page).fetchall()
     word_count는 regexp에 대응되는 전체 word의 갯수입니다. 아까처럼 하면 fetch_num과 같은 값이 나올것 같네요'''
 
-    word_count = db.session.execute(RAWQUERY['get_search_length'],
+    word_count = db.engine.execute(RAWQUERY['get_search_length'],
                                     regex=word_regex).scalar()
     ret_val = {
         'word_count': word_count,

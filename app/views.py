@@ -70,11 +70,9 @@ def admin_json():
 def search_json():
     if not request.json or 'word' not in request.json:
         abort(400)
-    word_regex = request.json('word')
-    page_num = request.json('page')
-    page_num = 0 if page_num is None else int(page_num)
-    column_name = request.json('sort')
-    column_name = 'word_string' if column_name is None else column_name
+    word_regex = models.parse_to_regex(request.json['word'])
+    page_num = 0 if 'page' not in request.json else request.json['page']
+    column_name = 'word_string' if 'sort' not in request.json else request.json['sort']
     return models.get_search_json(word_regex, page_num, 15,
                                   column_name, DESC_TABLE[column_name])
 
