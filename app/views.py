@@ -74,7 +74,7 @@ def search_json():
     if not request.json or 'word' not in request.json:
         abort(400)
     word_regex = models.parse_to_regex(request.json['word'])
-    page_num = 0 if 'page' not in request.json else request.json['page']
+    page_num = 1 if 'page' not in request.json else request.json['page']
     column_name = 'word_string' if 'sort' not in request.json else request.json['sort']
     return models.get_search_json(word_regex, page_num, 15,
                                   column_name, DESC_TABLE[column_name])

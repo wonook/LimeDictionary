@@ -479,7 +479,8 @@ def tag_fetch(word_id, fetch_num):
     for (tag_id, val) in redis_c.zrange(word_id, 0, fetch_num - 1, desc=True, withscores=True):
         ret_val.append({
             'tag_id': int(tag_id),
-            'tag_rank': val
+            'tag_string': get_word(tag_id),
+            'tag_rank': int(val)
         })
     return ret_val
 
