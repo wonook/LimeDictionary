@@ -51,8 +51,11 @@ def read_data():
 def redis_add():
     form = DataAddForm()
     if form.validate_on_submit():
-        partdata = form.filename.data.partition(',')
-        models.tag_fetch(partdata[0], int(partdata[2]))
+        rrr = int(form.filename.data)
+        if rrr == -1:
+            models.elapse_time()
+        elif rrr == -2:
+            models.update_fresh_rate()
     return render_template('add_file.html', title='add redis', form=form)
 
 
