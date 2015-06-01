@@ -195,7 +195,7 @@ function WordShowController($scope, Word, $stateParams, Update, ngDialog) {
 
 	$scope.report_detail = '';
 	$scope.addReport = function(type) {
-		console.log({ call_func: "report", obj: [ $scope.word.word_id, type[0], type[1] ] }});
+		console.log({ call_func: "report", obj: [ $scope.word.word_id, type[0], type[1] ] });
 		Update.save({ call_func: "report", obj: [ $scope.word.word_id, type[0], type[1] ] }, function(response) {});
 	}
 }
