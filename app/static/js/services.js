@@ -11,12 +11,20 @@ angular.module('angularFlaskServices', ['ngResource'])
 		});
 	})
 	.factory('Word', function($resource) {
-		return $resource('http://www.kinetc.net:3000/api/word', {}, {
+		return $resource('/api/word', {}, {
 			query: {
 				method: 'GET',
 				params: { id: '' }
 			}
 		});
+	})
+	.factory('Admin', function($resource) {
+		return $resource('/api/admin', {}, {
+			query: {
+				method: 'GET',
+				params: { page: 0, recent: 0 }
+			}
+		})
 	})
 	.factory('Candidate', function($resource) {
 		return $resource('api/candidate/')

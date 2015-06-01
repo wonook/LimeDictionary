@@ -151,14 +151,22 @@ function CandidateController($scope) {
 
 }
 
-function PostListController($scope, Post) {
-	var postsQuery = Post.get({}, function(posts) {
-		$scope.posts = posts.objects;
-	});
+function AdminController($scope, Admin) {
+	$scope.recent = 0;
+
+	//var adminQuery = Admin.get({ page: $stateParams.page, recent = $scope.recent }, function(admin) {
+	//	$scope.reports = admin;
+	//})
+
+	$scope.reports = {
+		report_count: 0,
+		report_words: [ ]
+	};
 }
 
-function PostDetailController($scope, $routeParams, Post) {
-	var postQuery = Post.get({ postId: $routeParams.postId }, function(post) {
-		$scope.post = post;
-	});
-}
+//function PostListController($scope, Post) {
+//	var postsQuery = Post.get({}, function(posts) {
+//		$scope.posts = posts.objects;
+//	});
+//}
+

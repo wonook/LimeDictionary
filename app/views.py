@@ -19,6 +19,7 @@ DESC_TABLE = {
 @app.route('/index')
 @app.route('/home')
 @app.route('/words')
+@app.route('/admin')
 @app.route('/words/2')
 @app.route('/about')
 def index(**kwargs):

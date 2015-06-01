@@ -29,21 +29,15 @@ angular.module('AngularFlask', ['angularFlaskServices', 'ui.router', 'ngTagsInpu
 				templateUrl: '/static/partials/candidates.html',
 				controller: CandidateController
 			})
-			.state('post', {
-				url: '/post',
-				templateUrl: '/static/partials/post-list.html',
-				controller: PostListController
+			.state('admin', {
+				url: '/admin/{page}',
+				templateUrl: '/static/partials/admin.html',
+				controller: AdminController
 			})
-			.state('post.show', {
-				url: '/:postId',
-				templateUrl: '/static/partials/post-detail.html',
-				controller: PostDetailController
-			})
-			/* Create a "/blog" route that takes the user to the same place as "/post" */
-			.state('blog', {
-				url: '/blog',
-				templateUrl: '/static/partials/post-list.html',
-				controller: PostListController
+			.state('admindef', {
+				url: '/admin',
+				templateUrl: '/static/partials/admin.html',
+				controller: AdminController
 			})
 			;
 
