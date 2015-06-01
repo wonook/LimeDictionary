@@ -90,11 +90,17 @@ RAWQUERY = {
                           'UPDATE rank_log SET rank_bad = rank_bad + 1 WHERE word_id = :word_id and elapsed_date = 0')],
     'word_view': [text('UPDATE word_rank SET viewed = viewed + 1 WHERE word_id = :word_id'),
                   text('UPDATE rank_log SET viewed = viewed + 1 WHERE word_id = :word_id and elapsed_date = 0')],
-    'word_search': text('''
+    'word_search_DESC': text('''
     SELECT word_id, word_string, rank_good, rank_bad, viewed, fresh_rate
     FROM (word_search NATURAL JOIN word_all) NATURAL JOIN word_rank
-    WHERE word_parsed REGEXP :word ORDER BY :column_name :desc
-    LIMIT :fetch_start, :fetch_num
+    WHERE word_parsed REGEXP :word ORDER BY :column_name DESC
+    LIMIT :fetch_start , :fetch_num
+    '''),
+    'word_search_ASC': text('''
+    SELECT word_id, word_string, rank_good, rank_bad, viewed, fresh_rate
+    FROM (word_search NATURAL JOIN word_all) NATURAL JOIN word_rank
+    WHERE word_parsed REGEXP :word ORDER BY :column_name ASC
+    LIMIT :fetch_start , :fetch_num
     '''),
     'get_word_id': text('''
     SELECT word_id
@@ -104,10 +110,16 @@ RAWQUERY = {
     'get_word_data': text('''
     SELECT * FROM word_rank WHERE word_id = :word_id
     '''),
-    'get_candidate': text('''
+    'get_candidate_DESC': text('''
     SELECT word_id, word_string, vote
     FROM candidate_word NATURAL JOIN word_all
-    ORDER BY :column_name :desc
+    ORDER BY :column_name DESC
+    LIMIT :page_num, :fetch_num
+    '''),
+    'get_candidate_ASC': text('''
+    SELECT word_id, word_string, vote
+    FROM candidate_word NATURAL JOIN word_all
+    ORDER BY :column_name ASC
     LIMIT :page_num, :fetch_num
     '''),
     'get_candidate_count': text('''
@@ -305,9 +317,8 @@ def candidate_report(word_id, report_type, report_detail):
 def get_candidate_json(page_num, fetch_num, column_name, desc=True):
     desc_text = 'DESC' if desc else 'ASC'
 
-    candidate_result = db.engine.execute(RAWQUERY['get_candidate'],
+    candidate_result = db.engine.execute(RAWQUERY['get_candidate_' + desc_text],
                                          column_name=column_name,
-                                         desc=desc_text,
                                          page_num=(page_num - 1) * fetch_num,
                                          fetch_num=fetch_num)
     count_result = db.engine.execute(RAWQUERY['get_candidate_count']).scalar()
@@ -388,10 +399,9 @@ def word_view(word_id):
 def word_search(word_regex, fetch_start, fetch_num, column_name, desc=True):
     desc_text = 'DESC' if desc else 'ASC'
 
-    result = db.engine.execute(RAWQUERY['word_search'],
+    result = db.engine.execute(RAWQUERY['word_search_' + desc_text],
                                word=word_regex,
                                column_name=column_name,
-                               desc=desc_text,
                                fetch_start=fetch_start,
                                fetch_num=fetch_num)
     ret_val = list()
