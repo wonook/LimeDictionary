@@ -70,6 +70,7 @@ class RankLog(db.Model):
     rank_good = db.Column(db.Integer)
     rank_bad = db.Column(db.Integer)
     viewed = db.Column(db.Integer)
+    point = dv.Column(db.Integer)
 
     def __init__(self, word_id):
         self.word_id = word_id
@@ -77,6 +78,7 @@ class RankLog(db.Model):
         self.rank_bad = 0
         self.rank_good = 0
         self.viewed = 0
+        self.point = 0
 
 
 RAWQUERY = {
@@ -126,21 +128,12 @@ RAWQUERY = {
     'word_candidate_move': text('DELETE FROM word_candidate WHERE word_id = :word_id'),
     'report': text('UPDATE word_all SET reported = reported + 1 WHERE word_id = :word_id'),
     'word_delete': text('DELETE FROM word_all WHERE word_id = :word_id'),
-    'fresh_rate': text('''
-    WITH fresh_raw(word_id, rate) as
-    (
-        SELECT word_id, (DATEDIFF(CURRENT_DATE(), elapsed_date)) * (viewed + 10 * (rank_good + rank_bad))
-        FROM rank_log
-    ), max_rate(val) as (SELECT max(rate) FROM fresh_raw)
-    UPDATE word_rank SET fresh_rate =
-    (
-        SELECT 100 * fresh_raw.rate / max_rate.val
-        FROM fresh_raw, max_rate
-        WHERE word_rank.word_id = fresh_raw.word_id
-    )
-    '''),
-    'elapse_time':# [text('UPDATE rank_log SET elapsed_date = elapsed_date + 1'),
-                    text('DELETE FROM rank_log WHERE DATEDIFF(CURRENT_DATE(), elapsed_date) >= 30'),#],
+    'fresh_rate': [text('
+    UPDATE ONLY word_rank SET fresh_rate = (SELECT SUM(point) FROM rank_log WHERE word_rank.word_id = rank_log.word_id)'),
+                   text('SELECT AVG(fresh_rate) FROM word_rank ORDER BY fresh_rate DESC LIMIT (:top_n_count)'),
+                   text('UPDATE word_rank SET fresh_rate = (100 * fresh_rate / (:top_rate))')],
+    'elapse_time': [text('DELETE FROM rank_log WHERE DATEDIFF(CURRENT_DATE(), elapsed_date) >= 30'), 
+                    text('UPDATE rank_log SET point = (DATEDIFF(CURRENT_DATE(), elapsed_date)) * (viewed + 10 * (rank_good + rank_bad))')],
     'get_search_json': text('''
 		SELECT word_rank.word_id AS word_id, word_all.word_string AS word_string, rank_good, rank_bad, viewed, fresh_rate 
 		FROM (word_all NATURAL JOIN word_rank) 
@@ -376,11 +369,14 @@ def tag_fetch(word_id, fetch_num):
         print(get_word(id.decode('utf-8')), val)
 
 def update_fresh_rate():
-    db.engine.execute(RAWQUERY['fresh_rate'])
+    top_n_count = 10
+    db.engine.execute(RAWQUERY['fresh_rate'][0])#일단 포인트 합계를 넣어둠
+    result = db.engine.execute(RAWQUERY['fresh_rate'][1], top_n_count = top_n_count).first()#상위 top_n_count개의 포인트 합계의 평균을 추출
+    db.engine.execute(RAWQUERY['fresh_rate'][2], top_rate = result[0])#추출한 평균을 기준으로 fresh_rate 업데이트
 
 def elapse_time():
-    db.engine.execute(RAWQUERY['elapse_time'])#[0])
-  #  db.engine.execute(RAWQUERY['elapse_time'][1])
+    db.engine.execute(RAWQUERY['elapse_time'][0])
+    db.engine.execute(RAWQUERY['elapse_time'][1])
 
 
 def open_save_file(filename):
