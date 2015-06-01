@@ -1,6 +1,6 @@
 'use strict';
 
-angular.module('AngularFlask', ['angularFlaskServices', 'ui.router', 'ngTagsInput'])
+angular.module('AngularFlask', ['angularFlaskServices', 'ui.router', 'ngTagsInput', 'ngDialog'])
 	.config(['$locationProvider', '$stateProvider', '$urlRouterProvider',
 		function($locationProvider, $stateProvider, $urlRouterProvider) {
 			$stateProvider

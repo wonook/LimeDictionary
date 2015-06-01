@@ -137,7 +137,7 @@ function WordIndexController($scope) {
 
 }
 
-function WordShowController($scope, Word, $stateParams, Update) {
+function WordShowController($scope, Word, $stateParams, Update, ngDialog) {
 	var wordQuery = Word.get({ id: $stateParams.id }, function(word) {
 		$scope.word = word;
 	});
@@ -181,12 +181,17 @@ function WordShowController($scope, Word, $stateParams, Update) {
         return wordQuery;
     }
 
+	$scope.show = function() {
+		ngDialog.openConfirm({ template: 'modal.html' }).then(function(value) {
+			$scope.addReport(value);
+			return wordQuery;
+		}, function(reason) {});
+	};
 
-    $scope.report_name = '';
-    $scope.report_detail = '';
-    $scope.addReport = function() {
-
-    }
+	$scope.report_detail = '';
+	$scope.addReport = function(type) {
+		var reportQuery = Update.save({ call_func: "report", obj: [ $scope.word.word_id, type, $scope.report_detail ] }, function(response) {});
+	}
 }
 
 function CandidateController($scope, Candidate, $stateParams, Update) {

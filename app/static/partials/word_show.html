@@ -33,5 +33,22 @@
    	    <button type="submit" class="btn btn-default">Go!</button>
     </form>
 
+    <a style="position:absolute; right:60px;" class="btn btn-default" href ng-click="show()">신고하기</a>
+
 	<p><a ui-sref="home">home</a></p>
 </div>
+
+     <script type="text/ng-template" id="modal.html">
+        <div class="ngdialog-message">
+            <h3>신고하기</h3>
+            <input type="text" class="form-control" placeholder="신고 사유" ng-model="report_detail">
+        </div>
+        <div class="ngdialog-buttons">
+            <button type="button" ng-click="closeThisDialog(0)" class="btn btn-primary" data-dismiss="modal">취소</button>
+            <button type="button" ng-click="confirm(1)" class="btn btn-default" data-dismiss="modal">욕설</button>
+            <button type="button" ng-click="confirm(2)" class="btn btn-default" data-dismiss="modal">오타</button>
+            <button type="button" ng-click="confirm(3)" class="btn btn-default" data-dismiss="modal">중복</button>
+            <button type="button" ng-click="confirm(4)" class="btn btn-default" data-dismiss="modal">기타</button>
+        </div>
+
+     </script>
