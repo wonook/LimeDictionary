@@ -5,6 +5,7 @@ import redis
 import json
 from datetime import date
 from sqlalchemy.sql import text
+from sqlalchemy.exc import InvalidRequestError
 from flask import jsonify
 
 
@@ -304,8 +305,13 @@ def word_candidate_downvote(word_id):
 
 def word_search_insert(word):
     w = WordAll(word)
-    db.session.add(w)
+    try:
+        db.session.add(w)
+    except InvalidRequestError:
+        db.session.rollback()
+        return
     db.session.commit()
+
     db.session.add(WordSearch(w.word_id, parse_string(word)))
     db.session.commit()
     db.session.add(WordRank(w.word_id))
