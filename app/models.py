@@ -370,9 +370,15 @@ def tag_fetch(word_id, fetch_num):
 
 def update_fresh_rate():
     top_n_count = 10
-    db.engine.execute(RAWQUERY['fresh_rate'][0])#일단 포인트 합계를 넣어둠
-    result = db.engine.execute(RAWQUERY['fresh_rate'][1], top_n_count = top_n_count).first()#상위 top_n_count개의 포인트 합계의 평균을 추출
-    db.engine.execute(RAWQUERY['fresh_rate'][2], top_rate = result[0])#추출한 평균을 기준으로 fresh_rate 업데이트
+    trans = db.engine.begin()
+    try:
+        db.engine.execute(RAWQUERY['fresh_rate'][0])#일단 포인트 합계를 넣어둠
+        result = db.engine.execute(RAWQUERY['fresh_rate'][1], top_n_count = top_n_count).first()#상위 top_n_count개의 포인트 합계의 평균을 추출
+        db.engine.execute(RAWQUERY['fresh_rate'][2], top_rate = result[0])#추출한 평균을 기준으로 fresh_rate 업데이트
+        trans.commit()
+    except:
+        trans.rollback()
+        raise
 
 def elapse_time():
     db.engine.execute(RAWQUERY['elapse_time'][0])
