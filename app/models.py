@@ -143,6 +143,7 @@ RAWQUERY = {
     'word_candidate_upvote': text('UPDATE candidate_word SET vote = vote + 1 WHERE word_id = :word_id'),
     'word_candidate_downvote': text('UPDATE candidate_word SET vote = vote - 1 WHERE word_id = :word_id'),
     'word_candidate_move': text('DELETE FROM word_candidate WHERE word_id = :word_id'),
+    'get_candidate_vote': text('SELECT vote FROM word_candidate WHERE word_id = :word_id'),
     'report': text('UPDATE word_all SET reported = reported + 1 WHERE word_id = :word_id'),
     'word_delete': text('DELETE FROM word_all WHERE word_id = :word_id'),
     'fresh_rate': [text('''
@@ -287,6 +288,10 @@ def word_candidate_move(word_id):
 
 
 def word_candidate_upvote(word_id):
+    result = db.engine.execute(RAWQUERY['get_candidate_vote'], word_id=word_id).first()
+    if result[0] >= 4 : #5 이상이면 단어 등록
+        word_candidate_move(word_id)
+    else:
     db.engine.execute(RAWQUERY['word_candidate_upvote'], word_id=word_id)
 
 
