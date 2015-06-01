@@ -1,6 +1,23 @@
 asdf
-<div ng-repeat="word in words.dict">
-	<h4><a ui-sref="wordsshow({id: {{word.word_id}}})">{{ word.word_string }}</a></h4>
-</div>
+<table class="table">
+    <thead>
+    <tr>
+        <th>단어</th>
+        <th>신선도</th>
+        <th>추천</th>
+        <th>비추천</th>
+        <th>조회수</th>
+    </tr>
+    </thead>
+    <tbody ng-repeat="word in words.dict ">
+    <tr>
+        <td><h4><a ui-sref="wordsshow({id: {{word.word_id}}})">{{ word.word_string }}</a></h4></td>
+        <td>{{word.fresh_rate}}</td>
+        <td>{{word.rank_good}}</td>
+        <td>{{word.rank_bad}}</td>
+        <td>{{word.viewed}}</td>
+    </tr>
+    </tbody>
+</table>
 
 <div ng-hide="words.dict">No words to show</div>

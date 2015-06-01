@@ -22,7 +22,7 @@ DESC_TABLE = {
 @app.route('/admin')
 @app.route('/candidates')
 @app.route('/search')
-@app.route('/words/2')
+@app.route('/words/<int:asdf>')
 @app.route('/about')
 def index(**kwargs):
     return make_response(open('app/templates/index.html').read())

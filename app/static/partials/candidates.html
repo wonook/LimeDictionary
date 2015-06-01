@@ -1,7 +1,21 @@
 
-<div ng-repeat="candidate in candidates.candidate_words ">
-	<h4><a href="/word/{{ candidate.id }}">{{ candidate.word_string }}</a></h4>
-    {{candidate.vote}}
-</div>
+<table class="table">
+    <thead>
+    <tr>
+        <th>단어</th>
+        <th>추천</th>
+    </tr>
+    </thead>
+    <tbody ng-repeat="candidate in candidates.candidate_words ">
+        <tr>
+            <td><h4><a ui-sref="wordsshow({id: {{word.word_id}}})">{{ candidate.word_string }}</a></h4></td>
+            <td>
+                {{candidate.vote}}
+                <span class="glyphicon glyphicon-thumbs-up" ng-click="upvote()"></span>
+                <span class="glyphicon glyphicon-thumbs-down" ng-click="downvote()"></span>
+            </td>
+        </tr>
+    </tbody>
+</table>
 
 <div ng-hide="candidates.candidate_words">No words to show</div>

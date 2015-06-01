@@ -1,5 +1,13 @@
-<div ng-repeat="report in reports.report_words ">
-	<h4>{{ report.word_string }}</h4>
+
+<div class="panel panel-default">
+    <div class="panel-heading">신고 목록</div>
+    <ul class="list-group">
+        <li class="list-group-item" ng-repeat="report in reports.report_words">
+            <span class="label label-danger">{{ report.report_name }}</span>
+            <b>{{ report.word_string }}</b>
+            <span>{{ report.report_detail }}</span>
+        </li>
+    </ul>
 </div>
 
 <div ng-hide="reports.report_words">No words to show</div>

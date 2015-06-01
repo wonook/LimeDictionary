@@ -280,15 +280,34 @@ function WordShowController($scope, Word, $stateParams) {
 
 	}
 
+    $scope.tags = [];
+
 	$scope.word = {
-		fresh_rate: 0,
-		rank_bad: 0,
-		rank_good: 0,
-		tag: [ ],
-		viewed: 6,
-		word_id: 2,
-		word_string: "가깝"
-	}
+        fresh_rate: 0,
+        rank_bad: 0,
+        rank_good: 0,
+        tag: [
+            {
+                tag_id: 4,
+                tag_rank: 3,
+                tag_string: "가냐프"
+            },
+            {
+                tag_id: 5,
+                tag_rank: 2,
+                tag_string: "가냘프"
+            },
+            {
+                tag_id: 3,
+                tag_rank: 1,
+                tag_string: "가깝디가깝"
+            }
+        ],
+        viewed: 16,
+        word_id: 2,
+        word_string: "가깝"
+    }
+
 }
 
 function CandidateController($scope, Candidate) {
@@ -342,9 +361,45 @@ function AdminController($scope, Admin) {
 	//})
 
 	$scope.reports = {
-		report_count: 0,
-		report_words: [ ]
-	};
+        report_count: 7,
+        report_words: [
+            {
+                report_detail: "ㅇㅇㅇ",
+                report_name: "욕설",
+                word_string: "가냘프"
+            },
+            {
+                report_detail: "ㅇㅇㅂ",
+                report_name: "욕설",
+                word_string: "가냘프"
+            },
+            {
+                report_detail: "ㅇㅇㅂ",
+                report_name: "욕설",
+                word_string: "가냘프"
+            },
+            {
+                report_detail: "ㅇㅇㅁㅇ",
+                report_name: "욕설",
+                word_string: "가녀리"
+            },
+            {
+                report_detail: "ㅇㅇㅇ",
+                report_name: "오타",
+                word_string: "가냘프"
+            },
+            {
+                report_detail: "ㅇㅇㅁㅇ",
+                report_name: "중복 단어",
+                word_string: "가냘프"
+            },
+            {
+                report_detail: "ㅇㅇㅁㅇ",
+                report_name: "기타",
+                word_string: "가녀리"
+            }
+        ]
+    };
 }
 
 //function PostListController($scope, Post) {
