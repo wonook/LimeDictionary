@@ -65,10 +65,24 @@ function IndexController($scope, $state, $filter) {
 		return this.filter(function(i) {return a.indexOf(i) < 0;});
 	};
 
+    function cutDownPart(raw_letters) {
+        var key, tags_array, value;
+        tags_array = [];
+        if (raw_letters !== []) {
+            for (key in raw_letters) {
+                value = raw_letters[key];
+                if(value["text"] != null){
+                    tags_array.push(value["text"]);
+                }
+            }
+        }
+        return tags_array;
+    }
+
 	$scope.count = 1;
 	$scope.nextLetter = function() {
 		if($scope.whichLetter === 2) { //종성
-			buffer.push($scope.letters.diff(prev));
+			buffer.push(cutDownPart($scope.letters.diff(prev)));
 			parsed_letters.push(buffer);
 			buffer = [];
 			console.log("parsed letters:", parsed_letters);
@@ -81,7 +95,7 @@ function IndexController($scope, $state, $filter) {
 				$scope.whichLetter = 2;
 				$scope.nextLetter();
 			} else {
-				buffer.push($scope.letters.diff(prev));
+				buffer.push(cutDownPart($scope.letters.diff(prev)));
 				//console.log("buffer:", buffer);
 				$scope.whichLetter++;
 			}
