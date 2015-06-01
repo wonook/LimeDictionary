@@ -38,4 +38,11 @@
     </ul>
 </nav>
 
+<form class="form-inline" ng-submit="createCandidate()">
+    <div class="form-group">
+        <input type="text" class="form-control" placeholder="Title" ng-model="wordstring"/>
+    </div>
+    <button type="submit" class="btn btn-default">만들기</button>
+</form>
+
 <div ng-hide="candidates.candidate_words">No words to show</div>
