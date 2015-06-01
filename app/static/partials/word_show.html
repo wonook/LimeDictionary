@@ -13,8 +13,8 @@
             <tr>
             	<td>{{ word.fresh_rate }}</td>
             	<td>
-            	    {{ word.rank_good }} <span class="glyphicon glyphicon-thumbs-up" ng-click="upvote()"></span> /
-            	    {{ word.rank_bad }} <span class="glyphicon glyphicon-thumbs-down" ng-click="downvote()"></span>
+            	    {{ word.rank_good }} <span class="glyphicon glyphicon-thumbs-up" ng-click="upvote(word.word_id)"></span> /
+            	    {{ word.rank_bad }} <span class="glyphicon glyphicon-thumbs-down" ng-click="downvote(word.word_id)"></span>
             	</td>
             	<td>{{ word.viewed }}</td>
 			</tr>
@@ -24,6 +24,8 @@
     <h3>태그</h3>
     <span ng-repeat="tag in word.tag">
         <span class="label label-success">{{tag.tag_string}} {{tag.tag_rank}}</span>
+        <span class="glyphicon glyphicon-thumbs-up" ng-click="tagupvote(tag.tag_id)"></span>
+        <span class="glyphicon glyphicon-thumbs-down" ng-click="tagdownvote(tag.tad_id)"></span>
     </span>
     <form ng-submit="updateTags()" name="tagForm">
 	    <tags-input data-ng-model="tags" display-property="tag_string" placeholder="태그 추가하기" min-length="1">

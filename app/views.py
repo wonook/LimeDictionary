@@ -21,10 +21,12 @@ DESC_TABLE = {
 @app.route('/index')
 @app.route('/home')
 @app.route('/words')
-@app.route('/admin')
-@app.route('/candidates')
-@app.route('/search')
 @app.route('/words/<int:asdf>')
+@app.route('/admin')
+@app.route('/admin/<int:asdf>')
+@app.route('/candidates')
+@app.route('/candidates/<int:asdf>')
+@app.route('/search')
 @app.route('/about')
 def index(**kwargs):
     return make_response(open('app/templates/index.html').read())
@@ -86,7 +88,8 @@ def search_json():
     word_regex = models.parse_to_regex(request.json['word'])
     page_num = 1 if 'page' not in request.json else request.json['page']
     column_name = 'word_string' if 'sort' not in request.json else request.json['sort']
-    return models.get_search_json(word_regex, page_num, 15,
+    fetch_num = 15 if 'maxshow' not in request.json else request.json['maxshow']
+    return models.get_search_json(word_regex, page_num, fetch_num,
                                   column_name, DESC_TABLE[column_name])
 
 

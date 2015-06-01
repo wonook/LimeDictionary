@@ -1,4 +1,15 @@
 
+<div class="dropdown">
+    <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-expanded="true">
+        보기 방식
+        <span class="caret"></span>
+    </button>
+    <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
+        <li role="presentation"><a role="menuitem" tabindex="-1" ng-click="one()">최근 시간 순 정렬</a></li>
+        <li role="presentation"><a role="menuitem" tabindex="-1" ng-click="two()">신고 받은 횟수 순 정렬</a></li>
+    </ul>
+</div>
+
 <div class="panel panel-default">
     <div class="panel-heading">신고 목록</div>
     <ul class="list-group">
@@ -6,8 +17,16 @@
             <span class="label label-danger">{{ report.report_name }}</span>
             <b>{{ report.word_string }}</b>
             <span>{{ report.report_detail }}</span>
+            <span class="glyphicon glyphicon-trash" ng-click="deleteword(report.word_id)"></span>
         </li>
     </ul>
 </div>
+
+<nav>
+    <ul class="pager">
+        <li ng-show="{{page-1}} > 0"><a ui-sref="admin({page: {{page-1}}})">Previous</a></li>
+        <li ng-show="{{page+1}} <= totalpages"><a ui-sref="admin({page: {{page+1}}})">Next</a></li>
+    </ul>
+</nav>
 
 <div ng-hide="reports.report_words">No words to show</div>
