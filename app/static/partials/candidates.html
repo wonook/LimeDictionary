@@ -1,5 +1,18 @@
 
-<table class="table">
+<div class="dropdown">
+    <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-expanded="true">
+        보기 방식
+        <span class="caret"></span>
+    </button>
+    <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
+        <li role="presentation"><a role="menuitem" tabindex="-1" ng-click="one()">ID로 정렬</a></li>
+        <li role="presentation"><a role="menuitem" tabindex="-1" ng-click="two()">가나다순 정렬</a></li>
+        <li role="presentation"><a role="menuitem" tabindex="-1" ng-click="three()">투표순 정렬</a></li>
+    </ul>
+</div>
+
+
+<table ng-show="candidates.candidate_words" class="table">
     <thead>
     <tr>
         <th>단어</th>
@@ -17,5 +30,12 @@
         </tr>
     </tbody>
 </table>
+
+<nav>
+    <ul class="pager">
+        <li ng-show="{{page-1}} > 0"><a ui-sref="candidates({page: {{page-1}}})">Previous</a></li>
+        <li ng-show="{{page+1}} <= totalpages"><a ui-sref="candidates({page: {{page+1}}})">Next</a></li>
+    </ul>
+</nav>
 
 <div ng-hide="candidates.candidate_words">No words to show</div>

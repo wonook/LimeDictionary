@@ -25,7 +25,7 @@ angular.module('AngularFlask', ['angularFlaskServices', 'ui.router', 'ngTagsInpu
 				controller: WordShowController
 			})
 			.state('candidates', {
-				url: '/candidates',
+				url: '/candidates/{page}',
 				templateUrl: '/static/partials/candidates.html',
 				controller: CandidateController
 			})
@@ -34,6 +34,11 @@ angular.module('AngularFlask', ['angularFlaskServices', 'ui.router', 'ngTagsInpu
 				templateUrl: '/static/partials/admin.html',
 				controller: AdminController
 			})
+            .state('candidatesdef', {
+                url: '/candidates',
+                templateUrl: '/static/partials/candidates.html',
+                controller: CandidateController
+            })
 			.state('admindef', {
 				url: '/admin',
 				templateUrl: '/static/partials/admin.html',

@@ -7,7 +7,7 @@ function IndexController($scope, $state, $filter, Search) {
 
     $scope.words = {};
 
-	$scope.search = function() {
+    $scope.search = function() {
         var wordsQuery = Search.save({ word: parsed_letters }, function(words) {
         	$scope.words = words;
         });
@@ -159,10 +159,26 @@ function WordShowController($scope, Word, $stateParams) {
 
 function CandidateController($scope, Candidate, $stateParams) {
     $scope.sort = "word_string";
+    $scope.page = $stateParams.page;
+    $scope.totalpages = 0;
 
     var candidateQuery = Candidate.get({ page: $stateParams.page, sort: $scope.sort }, function(candidate) {
     	$scope.candidates = candidate;
+        $scope.totalpages = Math.ceil($scope.candidates.word_count / 15);
     });
+
+    $scope.one = function() {
+        $scope.sort = "word_id";
+        return candidateQuery;
+    }
+    $scope.two = function() {
+        $scope.sort = "word_string";
+        return candidateQuery;
+    }
+    $scope.three = function() {
+        $scope.sort = "vote";
+        return candidateQuery;
+    }
 
     $scope.upvote = function() {
 
@@ -175,9 +191,21 @@ function CandidateController($scope, Candidate, $stateParams) {
 
 function AdminController($scope, Admin, $stateParams) {
 	$scope.recent = 0;
+    $scope.page = $stateParams.page;
+    $scope.totalpages = 0;
+
+    $scope.one = function() {
+        $scope.recent = 0;
+        return adminQuery;
+    }
+    $scope.two = function() {
+        $scope.recent = 1;
+        return adminQuery;
+    }
 
     var adminQuery = Admin.get({ page: $stateParams.page, recent: $scope.recent }, function(reports) {
         $scope.reports = reports;
+        $scope.totalpages = Math.ceil($scope.reports.report_count / 15);
     });
 }
 
