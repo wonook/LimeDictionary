@@ -1,3 +1,4 @@
+# coding: utf-8
 from app import db, redis_c
 import os
 import redis

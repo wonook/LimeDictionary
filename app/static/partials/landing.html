@@ -2,13 +2,25 @@
 <div class="header-section">
 	<div class="row header-row">
 		<div class="span12 masthead">
-			<h1 class="heading">Welcome Home.</h1>
+			<h1 class="heading">LimeDictionary</h1>
 		</div>
 	</div>
 </div>
 <div class="header-push">
 </div>
 
+<form ng-submit="search()" name="searchForm">
+	<tags-input data-ng-model="letters" add-from-autocomplete-only="true" key-property="id" placeholder="글자를 입력하세요(스페이스 바를 누르면 목록이 나옵니다)" min-length="1" max-length="1">
+      	<auto-complete source="loadLetters($query)" min-length="0" debounce-delay="0" max-results-to-show="24"></auto-complete>
+      	{{ placeholder }}
+    </tags-input>
+    <button	type="button" class="btn btn-default" ng-click="nextLetter()" ng-init="whichLetter = 0">{{ placeholder2 }}</button>
+   	<button type="submit" class="btn btn-default">Go!</button>
+</form>
+
 <div>
-	<h3><a href="/blog">Check out my blog</a></h3>
+	<h4>{{ instructions }}</h4>
+	<p>- 한 글자나 자음/모음을 비워두면 그 글자는 자동으로 아무 글자나 채워지게 됩니다</p>
+	<p>- 글자 대신 초성 자리를 '*' 로 처리하시면 그 글자에 해당하는 자리는 임의의 값으로 채워집니다</p>
+	<p>- 일부러 비우고 싶은 자리는 'X' 로 처리해 주세요!</p>
 </div>
