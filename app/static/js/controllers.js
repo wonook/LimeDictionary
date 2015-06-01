@@ -8,7 +8,7 @@ function IndexController($scope, $state, $filter, Search) {
     $scope.words = {};
 	$scope.maxshow = 15;
     $scope.search = function() {
-        var wordsQuery = Search.save({ word: parsed_letters, maxshow: $scope.maxshow }, function(words) {
+        Search.save({ word: parsed_letters, maxshow: $scope.maxshow }, function(words) {
         	$scope.words = words;
         });
 		$state.go('home.search');
@@ -141,15 +141,18 @@ function WordShowController($scope, Word, $stateParams, Update, ngDialog) {
 	var wordQuery = Word.get({ id: $stateParams.id }, function(word) {
 		$scope.word = word;
 	});
+	var refresh = function() {
+		Word.get({ id: $stateParams.id }, function(word) { $scope.word = word; });
+	}
 
 	$scope.upvote = function(id) {
-        var upvoteQuery = Update.save({ call_func: "word_upvote", obj: [ id ]}, function(response) {});
-        return wordQuery;
+        Update.save({ call_func: "word_upvote", obj: [ id ]}, function(response) {});
+        return refresh();
     }
 
 	$scope.downvote = function(id) {
-        var downvoteQuery = Update.save({ call_func: "word_downvote", obj: [ id ]}, function(response) {});
-        return wordQuery;
+        Update.save({ call_func: "word_downvote", obj: [ id ]}, function(response) {});
+        return refresh();
 	}
 
     $scope.tags = [];
@@ -168,29 +171,29 @@ function WordShowController($scope, Word, $stateParams, Update, ngDialog) {
     }
     $scope.updateTags = function(id) {
         var param = [id].push(cutDownPart($scope.tags));
-        var newTagQuery = Update.save({ call_func: "tag_insert", obj: param}, function(response) {});
-        return wordQuery;
+        Update.save({ call_func: "tag_insert", obj: param}, function(response) {});
+        return refresh();
     }
 
     $scope.tagupvote = function(id) {
-        var tagupvoteQuery = Update.save({ call_func: "tag_upvote", obj: [ $scope.word.word_id, id ]}, function(response) {});
-        return wordQuery;
+        Update.save({ call_func: "tag_upvote", obj: [ $scope.word.word_id, id ]}, function(response) {});
+        return refresh();
     }
     $scope.tagdownvote = function(id) {
-        var tagdownvoteQuery = Update.save({ call_func: "tag_downvote", obj: [ $scope.word.word_id, id ]}, function(response) {});
-        return wordQuery;
+        Update.save({ call_func: "tag_downvote", obj: [ $scope.word.word_id, id ]}, function(response) {});
+        return refresh();
     }
 
 	$scope.show = function() {
 		ngDialog.openConfirm({ template: 'modal.html' }).then(function(value) {
 			$scope.addReport(value);
-			return wordQuery;
+			return refresh();
 		}, function(reason) {});
 	};
 
 	$scope.report_detail = '';
 	$scope.addReport = function(type) {
-		var reportQuery = Update.save({ call_func: "report", obj: [ $scope.word.word_id, type, $scope.report_detail ] }, function(response) {});
+		Update.save({ call_func: "report", obj: [ $scope.word.word_id, type, $scope.report_detail ] }, function(response) {});
 	}
 }
 
@@ -203,34 +206,37 @@ function CandidateController($scope, Candidate, $stateParams, Update) {
     	$scope.candidates = candidate;
         $scope.totalpages = Math.ceil($scope.candidates.word_count / 15);
     });
+	var refresh = function() {
+		Candidate.get({ page: $stateParams.page, sort: $scope.sort }, function(candidate) { $scope.candidates = candidate; });
+	}
 
     $scope.one = function() {
         $scope.sort = "word_id";
-        return candidateQuery;
+        return refresh();
     }
     $scope.two = function() {
         $scope.sort = "word_string";
-        return candidateQuery;
+        return refresh();
     }
     $scope.three = function() {
         $scope.sort = "vote";
-        return candidateQuery;
+        return refresh();
     }
 
     $scope.upvote = function(id) {
-        var upvoteQuery = Update.save({ call_func: "word_candidate_upvote", obj: [ id ]}, function(response) {});
-        return candidateQuery;
+        Update.save({ call_func: "word_candidate_upvote", obj: [ id ]}, function(response) {});
+        return refresh();
     }
 
     $scope.downvote = function(id) {
-        var downvoteQuery = Update.save({ call_func: "word_candidate_downvote", obj: [ id ]}, function(response) {});
-        return candidateQuery;
+        Update.save({ call_func: "word_candidate_downvote", obj: [ id ]}, function(response) {});
+        return refresh();
     }
 
     $scope.wordstring = '';
     $scope.createCandidate = function() {
-        var newQuery = Update.save({ call_func: "word_candidate_insert", obj: [ $scope.wordstring ] }, function(response) {});
-        return candidateQuery;
+        Update.save({ call_func: "word_candidate_insert", obj: [ $scope.wordstring ] }, function(response) {});
+        return refresh();
     }
 }
 
@@ -239,29 +245,25 @@ function AdminController($scope, Admin, $stateParams, Update) {
     $scope.page = $stateParams.page;
     $scope.totalpages = 0;
 
+	var adminQuery = Admin.get({ page: $stateParams.page, recent: $scope.recent }, function(reports) {
+		$scope.reports = reports;
+		$scope.totalpages = Math.ceil($scope.reports.report_count / 15);
+	});
+	var refresh = function() {
+		Admin.get({page: $stateParams.page, recent: $scope.recent}, function(reports) {$scope.reports = reports;});
+	}
+
     $scope.one = function() {
         $scope.recent = 0;
-        return adminQuery;
+        return refresh();
     }
     $scope.two = function() {
         $scope.recent = 1;
-        return adminQuery;
+        return refresh();
     }
 
     $scope.deleteword = function(id) {
-        var deleteQuery = Update.save({ call_func: "word_delete", obj: [id] }, function(response) {});
-        return adminQuery;
+        Update.save({ call_func: "word_delete", obj: [id] }, function(response) {});
+        return refresh();
     }
-
-    var adminQuery = Admin.get({ page: $stateParams.page, recent: $scope.recent }, function(reports) {
-        $scope.reports = reports;
-        $scope.totalpages = Math.ceil($scope.reports.report_count / 15);
-    });
 }
-
-//function PostListController($scope, Post) {
-//	var postsQuery = Post.get({}, function(posts) {
-//		$scope.posts = posts.objects;
-//	});
-//}
-
