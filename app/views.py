@@ -21,7 +21,9 @@ DESC_TABLE = {
 @app.route('/home')
 @app.route('/words')
 @app.route('/admin')
-@app.route('/words/2')
+@app.route('/candidates')
+@app.route('/search')
+@app.route('/words/<int:asdf>')
 @app.route('/about')
 def index(**kwargs):
     return make_response(open('app/templates/index.html').read())
@@ -54,7 +56,7 @@ def redis_add():
 @app.route('/api/result', methods=['GET'])
 def result_json():
     word_regex = urllib.parse.unquote(request.args.get('word'))
-    page_num = int(request.args.get('page'))
+    page_num = request.args.get('page')
     page_num = 1 if page_num is None else int(page_num)
     column_name = request.args.get('sort')
     column_name = 'word_string' if column_name is None else column_name
@@ -63,7 +65,7 @@ def result_json():
 
 @app.route('/api/admin', methods=['GET'])
 def admin_json():
-    page_num = int(request.args.get('page'))
+    page_num = request.args.get('page')
     page_num = 1 if page_num is None else int(page_num)
     recent = request.args.get('recent')
     recent = 0 if recent is None else recent
@@ -87,12 +89,44 @@ def word_json():
 
 @app.route('/api/candidate', methods=['GET'])
 def candidate_json():
-    page_num = int(request.args.get('page'))
+    page_num = request.args.get('page')
     page_num = 1 if page_num is None else int(page_num)
     column_name = request.args.get('sort')
     column_name = 'word_string' if column_name is None else column_name
     return models.get_candidate_json(page_num, 15,
                                      column_name, DESC_TABLE[column_name])
+
+@app.route('/api/update', methods=['POST'])
+def update_json():
+    if not request.json:
+        abort(400)
+
+    if 'word_candidate_insert' in request.json:
+        pass
+    elif 'word_candidate_upvote' in request.json:
+        pass
+    elif 'word_candidate_downvote' in request.json:
+        pass
+    elif 'word_search_insert' in request.json:
+        pass
+    elif 'report' in request.json:
+        pass
+    elif 'candidate_report' in request.json:
+        pass
+    elif 'word_report' in request.json:
+        pass
+    elif 'word_delete' in request.json:
+        pass
+    elif 'word_upvote' in request.json:
+        pass
+    elif 'word_downvote' in request.json:
+        pass
+    elif 'tag_insert' in request.json:
+        pass
+    elif 'tag_upvote' in request.json:
+        pass
+    elif 'tag_downvote' in request.json:
+        pass
 
 @app.errorhandler(404)
 def not_found(error):
