@@ -14,10 +14,10 @@ angular.module('AngularFlask', ['angularFlaskServices', 'ui.router', 'ngTagsInpu
 				templateUrl: '/static/partials/about.html',
 				controller: AboutController
 			})
-			.state('words', {
-				url: '/words',
+			.state('home.search', {
+				url: '/search',
 				templateUrl: '/static/partials/word_index.html',
-				controller: WordIndexController
+				controller: IndexController
 			})
 			.state('wordsshow', {
 				url: '/words/{id}',

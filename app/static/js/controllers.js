@@ -2,12 +2,14 @@
 
 /* Controllers */
 
-function IndexController($scope, $state, $filter) {
+function IndexController($scope, $state, $filter, Search) {
 	$scope.instructions = "위에서 단어를 검색하세요!";
 
 	$scope.search = function() {
-		console.log($scope.searchQuery);
-		$state.go('words');
+        var wordsQuery = Search.save({ word: parsed_letters }, function(words) {
+        	$scope.words = words;
+        });
+		$state.go('home.search');
 	}
 
 	var getid = function() {
