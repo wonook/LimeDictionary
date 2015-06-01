@@ -305,13 +305,8 @@ def word_candidate_downvote(word_id):
 
 def word_search_insert(word):
     w = WordAll(word)
-    try:
-        db.session.add(w)
-    except InvalidRequestError:
-        db.session.rollback()
-        return
+    db.session.add(w)
     db.session.commit()
-
     db.session.add(WordSearch(w.word_id, parse_string(word)))
     db.session.commit()
     db.session.add(WordRank(w.word_id))
@@ -567,6 +562,7 @@ def open_save_file(filename):
                 word_search_insert(w)
             except Exception as e:
                 print("duplicate {0}: {1}".format(type(e), e))
+                db.session.rollback()
             i += 1
             if i > 100:
                 i = 0
