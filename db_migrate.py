@@ -9,7 +9,7 @@ from app import app, db
 
 
 def create_sample_db_entry(api_endpoint, payload):
-    url = 'http://localhost:5000/' + api_endpoint
+    url = 'http://localhost:3000/' + api_endpoint
     r = requests.post(
         url, data=json.dumps(payload),
         headers={'Content-Type': 'application/json'})
