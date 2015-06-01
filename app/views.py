@@ -139,8 +139,7 @@ def update_json():
     elif call_func == 'word_downvote':
         models.word_downvote(int(obj[0]))
     elif call_func == 'tag_insert':
-        models.tag_insert(int(obj[0]),
-                          int(obj[1]))
+        models.tag_list_insert(int(obj[0]), obj)
     elif call_func == 'tag_upvote':
         models.tag_upvote(int(obj[0]),
                           int(obj[1]))

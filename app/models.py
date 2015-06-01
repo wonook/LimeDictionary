@@ -469,6 +469,16 @@ def get_word_data(word_id):
     }
     return word_data
 
+def tag_list_insert(word_id, tag_list):
+    is_len = False
+    for tag in tag_list:
+        if not is_len:
+            is_len = True
+            continue
+        tag_id = get_word_id(tag)
+        if tag_id != -1:
+            tag_insert(word_id, tag_id)
+
 
 def get_word_json(word_id, tag_count):
     word_data = get_word_data(word_id)
