@@ -7,7 +7,7 @@ function IndexController($scope, $state, $filter, Search) {
 
     $scope.words = {};
 
-	$scope.search = function() {
+    $scope.search = function() {
         var wordsQuery = Search.save({ word: parsed_letters }, function(words) {
         	$scope.words = words;
         });
@@ -47,13 +47,13 @@ function IndexController($scope, $state, $filter, Search) {
 	var fl = footer_letter();
 	$scope.loadLetters = function(query) {
 		if($scope.whichLetter === 0) {
-			if (query == ' ') return hl;
-			return $filter('filter')(vl, {text: query}, function(actual, expected) { actual >= expected });
+			if (query.trim() == '') return hl;
+			return $filter('filter')(hl, {text: query}, function(actual, expected) { actual >= expected });
 		} else if ($scope.whichLetter === 1) {
-			if (query == ' ') return vl;
+			if (query.trim() == '') return vl;
 			return $filter('filter')(vl, {text: query});
 		} else {
-			if (query == ' ') return fl;
+			if (query.trim() == '') return fl;
 			return $filter('filter')(fl, {text: query});
 		}
 	}
@@ -137,39 +137,120 @@ function WordIndexController($scope) {
 
 }
 
-function WordShowController($scope, Word, $stateParams) {
+function WordShowController($scope, Word, $stateParams, Update) {
 	var wordQuery = Word.get({ id: $stateParams.id }, function(word) {
 		$scope.word = word;
 	});
 
-	$scope.upvote = function() {
+	$scope.upvote = function(id) {
+        var upvoteQuery = Update.save({ callfunc: "word_upvote", obj: [ id ]}, function(response) {});
+        return wordQuery;
+    }
 
-	}
-
-	$scope.downvote = function() {
-
-	}
-
-	$scope.updateTags = function() {
-
+	$scope.downvote = function(id) {
+        var downvoteQuery = Update.save({ callfunc: "word_downvote", obj: [ id ]}, function(response) {});
+        return wordQuery;
 	}
 
     $scope.tags = [];
+    function cutDownPart(raw_letters) {
+        var key, tags_array, value;
+        tags_array = [];
+        if (raw_letters !== []) {
+            for (key in raw_letters) {
+                value = raw_letters[key];
+                if(value["text"] != null){
+                    tags_array.push(value["text"]);
+                }
+            }
+        }
+        return tags_array;
+    }
+    $scope.updateTags = function(id) {
+        var param = [id].push(cutDownPart($scope.tags));
+        var newTagQuery = Update.save({ callfunc: "tag_insert", obj: param}, function(response) {});
+        return wordQuery;
+    }
+
+    $scope.tagupvote = function(id) {
+        var tagupvoteQuery = Update.save({ callfunc: "tag_upvote", obj: [ $scope.word.word_id, id ]}, function(response) {});
+        return wordQuery;
+    }
+    $scope.tagdownvote = function(id) {
+        var tagdownvoteQuery = Update.save({ callfunc: "tag_downvote", obj: [ $scope.word.word_id, id ]}, function(response) {});
+        return wordQuery;
+    }
+
+
+    $scope.report_name = '';
+    $scope.report_detail = '';
+    $scope.addReport = function() {
+
+    }
 }
 
-function CandidateController($scope, Candidate, $stateParams) {
+function CandidateController($scope, Candidate, $stateParams, Update) {
     $scope.sort = "word_string";
+    $scope.page = $stateParams.page;
+    $scope.totalpages = 0;
 
     var candidateQuery = Candidate.get({ page: $stateParams.page, sort: $scope.sort }, function(candidate) {
     	$scope.candidates = candidate;
+        $scope.totalpages = Math.ceil($scope.candidates.word_count / 15);
     });
+
+    $scope.one = function() {
+        $scope.sort = "word_id";
+        return candidateQuery;
+    }
+    $scope.two = function() {
+        $scope.sort = "word_string";
+        return candidateQuery;
+    }
+    $scope.three = function() {
+        $scope.sort = "vote";
+        return candidateQuery;
+    }
+
+    $scope.upvote = function(id) {
+        var upvoteQuery = Update.save({ callfunc: "word_candidate_upvote", obj: [ id ]}, function(response) {});
+        return candidateQuery;
+    }
+
+    $scope.downvote = function(id) {
+        var downvoteQuery = Update.save({ callfunc: "word_candidate_downvote", obj: [ id ]}, function(response) {});
+        return candidateQuery;
+    }
+
+    $scope.wordstring = '';
+    $scope.createCandidate = function() {
+        var newQuery = Update.save({ callfunc: "word_candidate_insert", obj: [ $scope.wordstring ] }, function(response) {});
+        return candidateQuery;
+    }
 }
 
-function AdminController($scope, Admin, $stateParams) {
+function AdminController($scope, Admin, $stateParams, Update) {
 	$scope.recent = 0;
+    $scope.page = $stateParams.page;
+    $scope.totalpages = 0;
+
+    $scope.one = function() {
+        $scope.recent = 0;
+        return adminQuery;
+    }
+    $scope.two = function() {
+        $scope.recent = 1;
+        return adminQuery;
+    }
+
+    $scope.deleteword = function(id) {
+        var deleteQuery = Update.save({ callfunc: "word_delete", obj: [id] }, function(response) {});
+        return adminQuery;
+    }
 
     var adminQuery = Admin.get({ page: $stateParams.page, recent: $scope.recent }, function(reports) {
         $scope.reports = reports;
+        $scope.totalpages = Math.ceil($scope.reports.report_count / 15);
     });
 }
 

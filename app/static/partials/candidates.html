@@ -1,5 +1,18 @@
 
-<table class="table">
+<div class="dropdown">
+    <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-expanded="true">
+        보기 방식
+        <span class="caret"></span>
+    </button>
+    <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
+        <li role="presentation"><a role="menuitem" tabindex="-1" ng-click="one()">ID로 정렬</a></li>
+        <li role="presentation"><a role="menuitem" tabindex="-1" ng-click="two()">가나다순 정렬</a></li>
+        <li role="presentation"><a role="menuitem" tabindex="-1" ng-click="three()">투표순 정렬</a></li>
+    </ul>
+</div>
+
+
+<table ng-show="candidates.candidate_words" class="table">
     <thead>
     <tr>
         <th>단어</th>
@@ -8,14 +21,28 @@
     </thead>
     <tbody ng-repeat="candidate in candidates.candidate_words ">
         <tr>
-            <td><h4><a ui-sref="wordsshow({id: {{word.word_id}}})">{{ candidate.word_string }}</a></h4></td>
+            <td><h4><a ui-sref="wordsshow({id: {{candidate.word_id}}})">{{ candidate.word_string }}</a></h4></td>
             <td>
                 {{candidate.vote}}
-                <span class="glyphicon glyphicon-thumbs-up" ng-click="upvote()"></span>
-                <span class="glyphicon glyphicon-thumbs-down" ng-click="downvote()"></span>
+                <span class="glyphicon glyphicon-thumbs-up" ng-click="upvote(candidate.word_id)"></span>
+                <span class="glyphicon glyphicon-thumbs-down" ng-click="downvote(candidate.word_id)"></span>
             </td>
         </tr>
     </tbody>
 </table>
+
+<nav>
+    <ul class="pager">
+        <li ng-show="{{page-1}} > 0"><a ui-sref="candidates({page: {{page-1}}})">Previous</a></li>
+        <li ng-show="{{page+1}} <= totalpages"><a ui-sref="candidates({page: {{page+1}}})">Next</a></li>
+    </ul>
+</nav>
+
+<form class="form-inline" ng-submit="createCandidate()">
+    <div class="form-group">
+        <input type="text" class="form-control" placeholder="Title" ng-model="wordstring"/>
+    </div>
+    <button type="submit" class="btn btn-default">만들기</button>
+</form>
 
 <div ng-hide="candidates.candidate_words">No words to show</div>
