@@ -322,6 +322,7 @@ def get_candidate_json(page_num, fetch_num, column_name, desc=True):
                                          column_name=column_name,
                                          page_num=(page_num - 1) * fetch_num,
                                          fetch_num=fetch_num)
+
     count_result = db.engine.execute(RAWQUERY['get_candidate_count']).scalar()
     candidate_data = {
         'word_count': count_result,
