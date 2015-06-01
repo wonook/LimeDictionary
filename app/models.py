@@ -31,7 +31,7 @@ class CandidateWord(db.Model):
     word_id = db.Column(db.Integer, db.ForeignKey('word_all.word_id', ondelete='CASCADE'), primary_key=True)
     vote = db.Column(db.Integer)
 
-    def __init(self, word_id):
+    def __init__(self, word_id):
         self.word_id = word_id
         self.vote = 0
 
@@ -289,8 +289,8 @@ def word_candidate_move(word_id):
 
 
 def word_candidate_upvote(word_id):
-    result = db.engine.execute(RAWQUERY['get_candidate_vote'], word_id=word_id).first()
-    if result[0] >= 4 : #5 이상이면 단어 등록
+    result = db.engine.execute(RAWQUERY['get_candidate_vote'], word_id=word_id).scalar()
+    if result >= 4 : #5 이상이면 단어 등록
         word_candidate_move(word_id)
     else:
         db.engine.execute(RAWQUERY['word_candidate_upvote'], word_id=word_id)
