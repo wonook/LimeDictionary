@@ -131,7 +131,7 @@ RAWQUERY = {
     FROM candidate_word
     '''),
     'get_report': text('''
-    SELECT report_name, word_string, report_detail, reported
+    SELECT report_name, word_string, report_detail, word_id, reported
     FROM (report_log NATURAL JOIN report_class) NATURAL JOIN word_all
     ORDER BY :column_name DESC
     LIMIT :page_num, :fetch_num
@@ -368,7 +368,8 @@ def get_admin_json(page_num, fetch_num, recent):
         data = {
             'report_name': row[0],
             'word_string': row[1],
-            'report_detail': row[2]
+            'report_detail': row[2],
+            'word_id': row[3]
         }
         report_words.append(data)
 
