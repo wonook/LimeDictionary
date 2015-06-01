@@ -109,6 +109,12 @@ def candidate_json():
                                      column_name, DESC_TABLE[column_name])
 
 
+@app.route('/api/candidate_word', methods=['GET'])
+def candidate_word_json():
+    word_id = int(request.args.get('id'))
+    return models.get_cand_word_json(word_id)
+
+
 @app.route('/api/update', methods=['POST'])
 def update_json():
     if not request.json or 'call_func' not in request.json:

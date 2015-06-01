@@ -130,6 +130,7 @@ RAWQUERY = {
     SELECT count(*)
     FROM candidate_word
     '''),
+    'get_cand_word_json':text('SELECT vote FROM '),
     'get_report': text('''
     SELECT report_name, word_string, report_detail, word_id, reported
     FROM (report_log NATURAL JOIN report_class) NATURAL JOIN word_all
@@ -493,6 +494,17 @@ def get_word_json(word_id, tag_count):
     tag = tag_fetch(word_id, tag_count)
     word_data['tag'] = tag
     return jsonify(word_data)
+
+def get_cand_word_json(word_id):
+    result = db.engine.execute(RAWQUERY['get_cand_word_json'], word_id=word_id).scalar()
+    if result is None:
+        return jsonify(dict())
+    cand_data = {
+        'word_id': word_id,
+        'word_string': get_word(str(word_id)),
+        'vote': result
+    }
+    return jsonify(cand_data)
 
 
 def tag_insert(word_id, tag):
