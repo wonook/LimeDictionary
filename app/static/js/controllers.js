@@ -48,7 +48,7 @@ function IndexController($scope, $state, $filter, Search) {
 	$scope.loadLetters = function(query) {
 		if($scope.whichLetter === 0) {
 			if (query.trim() == '') return hl;
-			return $filter('filter')(hl, {text: query}, function(actual, expected) { actual >= expected });
+			return $filter('filter')(hl, {text: query});
 		} else if ($scope.whichLetter === 1) {
 			if (query.trim() == '') return vl;
 			return $filter('filter')(vl, {text: query});
@@ -162,15 +162,15 @@ function WordShowController($scope, Word, $stateParams, Update, ngDialog) {
         if (raw_letters !== []) {
             for (key in raw_letters) {
                 value = raw_letters[key];
-                if(value["text"] != null){
-                    tags_array.push(value["text"]);
+                if(value["tag_string"] != null){
+                    tags_array.push(value["tag_string"]);
                 }
             }
         }
         return tags_array;
     }
     $scope.updateTags = function(id) {
-        var param = [id].push(cutDownPart($scope.tags));
+        var param = [id].concat(cutDownPart($scope.tags));
         Update.save({ call_func: "tag_insert", obj: param}, function(response) {});
         return refresh();
     }
@@ -193,7 +193,7 @@ function WordShowController($scope, Word, $stateParams, Update, ngDialog) {
 
 	$scope.report_detail = '';
 	$scope.addReport = function(type) {
-		Update.save({ call_func: "report", obj: [ $scope.word.word_id, type, $scope.report_detail ] }, function(response) {});
+		Update.save({ call_func: "report", obj: [ $scope.word.word_id, type[0], type[1] ] }, function(response) {});
 	}
 }
 

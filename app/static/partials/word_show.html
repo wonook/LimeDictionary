@@ -27,7 +27,7 @@
         <span class="glyphicon glyphicon-thumbs-up" ng-click="tagupvote(tag.tag_id)"></span>
         <span class="glyphicon glyphicon-thumbs-down" ng-click="tagdownvote(tag.tad_id)"></span>
     </span>
-    <form ng-submit="updateTags()" name="tagForm">
+    <form ng-submit="updateTags(word.word_id)" name="tagForm">
 	    <tags-input data-ng-model="tags" display-property="tag_string" placeholder="태그 추가하기" min-length="1">
         </tags-input>
    	    <button type="submit" class="btn btn-default">Go!</button>
@@ -45,10 +45,10 @@
         </div>
         <div class="ngdialog-buttons">
             <button type="button" ng-click="closeThisDialog(0)" class="btn btn-primary" data-dismiss="modal">취소</button>
-            <button type="button" ng-click="confirm(1)" class="btn btn-default" data-dismiss="modal">욕설</button>
-            <button type="button" ng-click="confirm(2)" class="btn btn-default" data-dismiss="modal">오타</button>
-            <button type="button" ng-click="confirm(3)" class="btn btn-default" data-dismiss="modal">중복</button>
-            <button type="button" ng-click="confirm(4)" class="btn btn-default" data-dismiss="modal">기타</button>
+            <button type="button" ng-click="confirm([1, report_detail])" class="btn btn-default" data-dismiss="modal">욕설</button>
+            <button type="button" ng-click="confirm([2, report_detail])" class="btn btn-default" data-dismiss="modal">오타</button>
+            <button type="button" ng-click="confirm([3, report_detail])" class="btn btn-default" data-dismiss="modal">중복</button>
+            <button type="button" ng-click="confirm([4, report_detail])" class="btn btn-default" data-dismiss="modal">기타</button>
         </div>
 
      </script>
