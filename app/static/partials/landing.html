@@ -9,6 +9,15 @@
 <div class="header-push">
 </div>
 
+<form class="form-inline">
+  <div class="form-group">
+    <div class="input-group">
+      <div class="input-group-addon">목록 개수</div>
+      <input type="number" class="form-control" placeholder="숫자로 기입해 주세요" ng-model="maxshow">
+    </div>
+  </div>
+</form>
+
 <form ng-submit="search()" name="searchForm">
 	<tags-input data-ng-model="letters" add-from-autocomplete-only="true" key-property="id" placeholder="글자를 입력하세요(스페이스 바를 누르면 목록이 나옵니다)" min-length="1" max-length="1">
       	<auto-complete source="loadLetters($query)" min-length="0" debounce-delay="0" max-results-to-show="24"></auto-complete>

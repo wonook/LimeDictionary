@@ -13,7 +13,7 @@ angular.module('angularFlaskServices', ['ngResource'])
         return $resource('/api/search', {}, {
             query: {
                 method: 'POST',
-                params: { word: [] }
+                params: { word: [], maxshow: 15 }
             }
         })
     })

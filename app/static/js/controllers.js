@@ -6,9 +6,9 @@ function IndexController($scope, $state, $filter, Search) {
 	$scope.instructions = "위에서 단어를 검색하세요!";
 
     $scope.words = {};
-
+	$scope.maxshow = 15;
     $scope.search = function() {
-        var wordsQuery = Search.save({ word: parsed_letters }, function(words) {
+        var wordsQuery = Search.save({ word: parsed_letters, maxshow: $scope.maxshow }, function(words) {
         	$scope.words = words;
         });
 		$state.go('home.search');
