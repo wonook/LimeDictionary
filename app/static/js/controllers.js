@@ -8,135 +8,9 @@ function IndexController($scope, $state, $filter, Search) {
     $scope.words = {};
 
 	$scope.search = function() {
-        //var wordsQuery = Search.save({ word: parsed_letters }, function(words) {
-        //	$scope.words = words;
-        //});
-        $scope.words = {
-            "dict": [
-                {
-                    "fresh_rate": 0,
-                    "rank_bad": 0,
-                    "rank_good": 0,
-                    "viewed": 9,
-                    "word_id": 3,
-                    "word_string": "\uac00\uae5d\ub514\uac00\uae5d"
-                },
-                {
-                    "fresh_rate": 0,
-                    "rank_bad": 0,
-                    "rank_good": 0,
-                    "viewed": 1,
-                    "word_id": 4,
-                    "word_string": "\uac00\ub0d0\ud504"
-                },
-                {
-                    "fresh_rate": 0,
-                    "rank_bad": 0,
-                    "rank_good": 0,
-                    "viewed": 0,
-                    "word_id": 5,
-                    "word_string": "\uac00\ub0d8\ud504"
-                },
-                {
-                    "fresh_rate": 0,
-                    "rank_bad": 0,
-                    "rank_good": 0,
-                    "viewed": 0,
-                    "word_id": 6,
-                    "word_string": "\uac00\ub140\ub9ac"
-                },
-                {
-                    "fresh_rate": 0,
-                    "rank_bad": 0,
-                    "rank_good": 0,
-                    "viewed": 0,
-                    "word_id": 7,
-                    "word_string": "\uac00\ub290\ub2e4\ub797"
-                },
-                {
-                    "fresh_rate": 0,
-                    "rank_bad": 0,
-                    "rank_good": 0,
-                    "viewed": 0,
-                    "word_id": 8,
-                    "word_string": "\uac00\ub290\ub2ff"
-                },
-                {
-                    "fresh_rate": 0,
-                    "rank_bad": 0,
-                    "rank_good": 0,
-                    "viewed": 0,
-                    "word_id": 9,
-                    "word_string": "\uac00\ub290\ub797"
-                },
-                {
-                    "fresh_rate": 0,
-                    "rank_bad": 0,
-                    "rank_good": 0,
-                    "viewed": 0,
-                    "word_id": 10,
-                    "word_string": "\uac00\ub298"
-                },
-                {
-                    "fresh_rate": 0,
-                    "rank_bad": 0,
-                    "rank_good": 0,
-                    "viewed": 0,
-                    "word_id": 11,
-                    "word_string": "\uac00\ub298\ub514\uac00\ub298"
-                },
-                {
-                    "fresh_rate": 0,
-                    "rank_bad": 0,
-                    "rank_good": 0,
-                    "viewed": 0,
-                    "word_id": 12,
-                    "word_string": "\uac00\ub2d0"
-                },
-                {
-                    "fresh_rate": 0,
-                    "rank_bad": 0,
-                    "rank_good": 0,
-                    "viewed": 0,
-                    "word_id": 13,
-                    "word_string": "\uac00\ub2f9\ucc2e"
-                },
-                {
-                    "fresh_rate": 0,
-                    "rank_bad": 0,
-                    "rank_good": 0,
-                    "viewed": 1,
-                    "word_id": 14,
-                    "word_string": "\uac00\ub4dd\ucc28"
-                },
-                {
-                    "fresh_rate": 0,
-                    "rank_bad": 0,
-                    "rank_good": 0,
-                    "viewed": 0,
-                    "word_id": 15,
-                    "word_string": "\uac00\ub78d"
-                },
-                {
-                    "fresh_rate": 0,
-                    "rank_bad": 0,
-                    "rank_good": 0,
-                    "viewed": 0,
-                    "word_id": 16,
-                    "word_string": "\uac00\ub7c9\uc2a4\ub7fd"
-                },
-                {
-                    "fresh_rate": 0,
-                    "rank_bad": 0,
-                    "rank_good": 0,
-                    "viewed": 0,
-                    "word_id": 17,
-                    "word_string": "\uac00\ub7c9\uc5c6"
-                }
-            ],
-            "word_count": 2208,
-            "word_regex": "......$"
-        }
+        var wordsQuery = Search.save({ word: parsed_letters }, function(words) {
+        	$scope.words = words;
+        });
 		$state.go('home.search');
 	}
 
@@ -264,9 +138,9 @@ function WordIndexController($scope) {
 }
 
 function WordShowController($scope, Word, $stateParams) {
-	//var wordQuery = Word.get({ id: $stateParams.id }, function(word) {
-	//	$scope.word = word;
-	//});
+	var wordQuery = Word.get({ id: $stateParams.id }, function(word) {
+		$scope.word = word;
+	});
 
 	$scope.upvote = function() {
 
@@ -281,125 +155,22 @@ function WordShowController($scope, Word, $stateParams) {
 	}
 
     $scope.tags = [];
-
-	$scope.word = {
-        fresh_rate: 0,
-        rank_bad: 0,
-        rank_good: 0,
-        tag: [
-            {
-                tag_id: 4,
-                tag_rank: 3,
-                tag_string: "가냐프"
-            },
-            {
-                tag_id: 5,
-                tag_rank: 2,
-                tag_string: "가냘프"
-            },
-            {
-                tag_id: 3,
-                tag_rank: 1,
-                tag_string: "가깝디가깝"
-            }
-        ],
-        viewed: 16,
-        word_id: 2,
-        word_string: "가깝"
-    }
-
 }
 
 function CandidateController($scope, Candidate) {
     $scope.sort = "word_string";
 
-    //var candidateQuery = Candidate.get({ page: $stateParams.page, sort: $scope.sort }, function(candidate) {
-    //	$scope.candidates = candidate;
-    //})
-
-    $scope.candidates = {
-        candidate_words: [
-            {vote: 0,
-                word_id: 2361,
-                word_string: "흐하하하"
-            },
-            {
-                vote: 0,
-                word_id: 2362,
-                word_string: "흐하하"
-            },
-            {
-                vote: 0,
-                word_id: 2363,
-                word_string: "사과나무밥"
-            },
-            {
-                vote: 0,
-                word_id: 2364,
-                word_string: "로피탈"
-            },
-            {
-                vote: 0,
-                word_id: 2365,
-                word_string: "전전회"
-            },
-            {
-                vote: 0,
-                word_id: 2366,
-                word_string: "컴공세"
-            }
-        ],
-        word_count: 6
-    }
+    var candidateQuery = Candidate.get({ page: $stateParams.page, sort: $scope.sort }, function(candidate) {
+    	$scope.candidates = candidate;
+    });
 }
 
 function AdminController($scope, Admin) {
 	$scope.recent = 0;
 
-	//var adminQuery = Admin.get({ page: $stateParams.page, recent = $scope.recent }, function(admin) {
-	//	$scope.reports = admin;
-	//})
-
-	$scope.reports = {
-        report_count: 7,
-        report_words: [
-            {
-                report_detail: "ㅇㅇㅇ",
-                report_name: "욕설",
-                word_string: "가냘프"
-            },
-            {
-                report_detail: "ㅇㅇㅂ",
-                report_name: "욕설",
-                word_string: "가냘프"
-            },
-            {
-                report_detail: "ㅇㅇㅂ",
-                report_name: "욕설",
-                word_string: "가냘프"
-            },
-            {
-                report_detail: "ㅇㅇㅁㅇ",
-                report_name: "욕설",
-                word_string: "가녀리"
-            },
-            {
-                report_detail: "ㅇㅇㅇ",
-                report_name: "오타",
-                word_string: "가냘프"
-            },
-            {
-                report_detail: "ㅇㅇㅁㅇ",
-                report_name: "중복 단어",
-                word_string: "가냘프"
-            },
-            {
-                report_detail: "ㅇㅇㅁㅇ",
-                report_name: "기타",
-                word_string: "가녀리"
-            }
-        ]
-    };
+	var adminQuery = Admin.get({ page: $stateParams.page, recent = $scope.recent }, function(admin) {
+		$scope.reports = admin;
+	});
 }
 
 //function PostListController($scope, Post) {
