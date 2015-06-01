@@ -147,10 +147,11 @@ RAWQUERY = {
     'report': text('UPDATE word_all SET reported = reported + 1 WHERE word_id = :word_id'),
     'word_delete': text('DELETE FROM word_all WHERE word_id = :word_id'),
     'fresh_rate': [text('''
-    UPDATE ONLY word_rank
+    UPDATE word_rank
     SET fresh_rate = (SELECT SUM(point) FROM rank_log
     WHERE word_rank.word_id = rank_log.word_id)'''),
-                   text('SELECT AVG(fresh_rate) FROM word_rank ORDER BY fresh_rate DESC LIMIT (:top_n_count)'),
+                   text('''SELECT AVG(fresh_rate) FROM
+                   (SELECT fresh_rate FROM word_rank ORDER BY fresh_rate DESC LIMIT (:top_n_count)) as top_fresh'''),
                    text('UPDATE word_rank SET fresh_rate = (100 * fresh_rate / (:top_rate))')],
     'elapse_time': [text('DELETE FROM rank_log WHERE DATEDIFF(CURRENT_DATE(), elapsed_date) >= 30'),
                     text('''
@@ -521,17 +522,13 @@ def tag_fetch(word_id, fetch_num):
 
 
 def update_fresh_rate():
-    top_n_count = 10
-    trans = db.engine.begin()
-    try:
-        db.engine.execute(RAWQUERY['fresh_rate'][0])  # 일단 포인트 합계를 넣어둠
-        result = db.engine.execute(RAWQUERY['fresh_rate'][1],
-                                   top_n_count=top_n_count).scalar()  # 상위 top_n_count개의 포인트 합계의 평균을 추출
-        db.engine.execute(RAWQUERY['fresh_rate'][2], top_rate=result)  # 추출한 평균을 기준으로 fresh_rate 업데이트
-        trans.commit()
-    except:
-        trans.rollback()
-        raise
+    top_n_count = 20
+
+    db.engine.execute(RAWQUERY['fresh_rate'][0])  # 일단 포인트 합계를 넣어둠
+    result = db.engine.execute(RAWQUERY['fresh_rate'][1],
+                               top_n_count=top_n_count).scalar()  # 상위 top_n_count개의 포인트 합계의 평균을 추출
+    db.engine.execute(RAWQUERY['fresh_rate'][2], top_rate=result)  # 추출한 평균을 기준으로 fresh_rate 업데이트
+
 
 
 def elapse_time():
