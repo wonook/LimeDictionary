@@ -6,9 +6,9 @@ function IndexController($scope, $state, $filter, Search) {
 	$scope.instructions = "위에서 단어를 검색하세요!";
 
     $scope.words = {};
-
+	$scope.maxshow = 15;
     $scope.search = function() {
-        var wordsQuery = Search.save({ word: parsed_letters }, function(words) {
+        var wordsQuery = Search.save({ word: parsed_letters, maxshow: $scope.maxshow }, function(words) {
         	$scope.words = words;
         });
 		$state.go('home.search');
@@ -137,18 +137,18 @@ function WordIndexController($scope) {
 
 }
 
-function WordShowController($scope, Word, $stateParams, Update) {
+function WordShowController($scope, Word, $stateParams, Update, ngDialog) {
 	var wordQuery = Word.get({ id: $stateParams.id }, function(word) {
 		$scope.word = word;
 	});
 
 	$scope.upvote = function(id) {
-        var upvoteQuery = Update.save({ callfunc: "word_upvote", obj: [ id ]}, function(response) {});
+        var upvoteQuery = Update.save({ call_func: "word_upvote", obj: [ id ]}, function(response) {});
         return wordQuery;
     }
 
 	$scope.downvote = function(id) {
-        var downvoteQuery = Update.save({ callfunc: "word_downvote", obj: [ id ]}, function(response) {});
+        var downvoteQuery = Update.save({ call_func: "word_downvote", obj: [ id ]}, function(response) {});
         return wordQuery;
 	}
 
@@ -168,25 +168,30 @@ function WordShowController($scope, Word, $stateParams, Update) {
     }
     $scope.updateTags = function(id) {
         var param = [id].push(cutDownPart($scope.tags));
-        var newTagQuery = Update.save({ callfunc: "tag_insert", obj: param}, function(response) {});
+        var newTagQuery = Update.save({ call_func: "tag_insert", obj: param}, function(response) {});
         return wordQuery;
     }
 
     $scope.tagupvote = function(id) {
-        var tagupvoteQuery = Update.save({ callfunc: "tag_upvote", obj: [ $scope.word.word_id, id ]}, function(response) {});
+        var tagupvoteQuery = Update.save({ call_func: "tag_upvote", obj: [ $scope.word.word_id, id ]}, function(response) {});
         return wordQuery;
     }
     $scope.tagdownvote = function(id) {
-        var tagdownvoteQuery = Update.save({ callfunc: "tag_downvote", obj: [ $scope.word.word_id, id ]}, function(response) {});
+        var tagdownvoteQuery = Update.save({ call_func: "tag_downvote", obj: [ $scope.word.word_id, id ]}, function(response) {});
         return wordQuery;
     }
 
+	$scope.show = function() {
+		ngDialog.openConfirm({ template: 'modal.html' }).then(function(value) {
+			$scope.addReport(value);
+			return wordQuery;
+		}, function(reason) {});
+	};
 
-    $scope.report_name = '';
-    $scope.report_detail = '';
-    $scope.addReport = function() {
-
-    }
+	$scope.report_detail = '';
+	$scope.addReport = function(type) {
+		var reportQuery = Update.save({ call_func: "report", obj: [ $scope.word.word_id, type, $scope.report_detail ] }, function(response) {});
+	}
 }
 
 function CandidateController($scope, Candidate, $stateParams, Update) {
@@ -213,18 +218,18 @@ function CandidateController($scope, Candidate, $stateParams, Update) {
     }
 
     $scope.upvote = function(id) {
-        var upvoteQuery = Update.save({ callfunc: "word_candidate_upvote", obj: [ id ]}, function(response) {});
+        var upvoteQuery = Update.save({ call_func: "word_candidate_upvote", obj: [ id ]}, function(response) {});
         return candidateQuery;
     }
 
     $scope.downvote = function(id) {
-        var downvoteQuery = Update.save({ callfunc: "word_candidate_downvote", obj: [ id ]}, function(response) {});
+        var downvoteQuery = Update.save({ call_func: "word_candidate_downvote", obj: [ id ]}, function(response) {});
         return candidateQuery;
     }
 
     $scope.wordstring = '';
     $scope.createCandidate = function() {
-        var newQuery = Update.save({ callfunc: "word_candidate_insert", obj: [ $scope.wordstring ] }, function(response) {});
+        var newQuery = Update.save({ call_func: "word_candidate_insert", obj: [ $scope.wordstring ] }, function(response) {});
         return candidateQuery;
     }
 }
@@ -244,7 +249,7 @@ function AdminController($scope, Admin, $stateParams, Update) {
     }
 
     $scope.deleteword = function(id) {
-        var deleteQuery = Update.save({ callfunc: "word_delete", obj: [id] }, function(response) {});
+        var deleteQuery = Update.save({ call_func: "word_delete", obj: [id] }, function(response) {});
         return adminQuery;
     }
 
