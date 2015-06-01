@@ -189,7 +189,7 @@ def parse_string(s):
 
 
 def parse_jlist(lst):
-    if '*' in lst:
+    if len(lst) == 0 or '?' in lst or '*' in lst:
         return '.'
     elif len(lst) == 1:
         return JAMOTABLE[lst[0]]
@@ -205,14 +205,17 @@ def parse_to_regex(jamo_tup):
         '성가대...' is in ['?', [['ㄱ','ㄴ'],['ㅏ'], ['X']], [['ㄷ'],['ㅐ','ㅏ'],['*']], '*']
     :return: regex string
     """
-    if jamo_tup == ['*']:
+    if jamo_tup == [['*']] or jamo_tup == [] or jamo_tup == [[]]:
         return '.*'
     ret_val = '^'
     for tup in jamo_tup:
-        if tup == '?':
+        if tup == ['?']:
             ret_val += '...'
             continue
-        elif tup == '*':
+        elif tup == ['*'] or tup == []:
+            if ret_val == '^':
+                ret_val = ''
+                continue
             ret_val += '*'
             continue
         elif not isinstance(tup, list):
