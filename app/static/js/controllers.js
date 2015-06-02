@@ -9,6 +9,7 @@ function IndexController($scope, $state, $filter, Search) {
 	$scope.maxshow = 15;
     $scope.sort = "fresh_rate";
     $scope.search = function() {
+        console.log({ word: parsed_letters, maxshow: $scope.maxshow, sort: $scope.sort });
         Search.save({ word: parsed_letters, maxshow: $scope.maxshow, sort: $scope.sort }, function(words) {
         	$scope.words = words;
         });
