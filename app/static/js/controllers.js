@@ -7,8 +7,9 @@ function IndexController($scope, $state, $filter, Search) {
 
     $scope.words = {};
 	$scope.maxshow = 15;
+    $scope.sort = "fresh_rate";
     $scope.search = function() {
-        Search.save({ word: parsed_letters, maxshow: $scope.maxshow }, function(words) {
+        Search.save({ word: parsed_letters, maxshow: $scope.maxshow, sort: $scope.sort }, function(words) {
         	$scope.words = words;
         });
 		$state.go('home.search');
@@ -127,6 +128,23 @@ function IndexController($scope, $state, $filter, Search) {
 		}
 		return;
 	}
+
+    $scope.one = function() {
+        $scope.sort = "fresh_rate";
+        return $scope.search();
+    }
+    $scope.two = function() {
+        $scope.sort = "rank_good";
+        return $scope.search();
+    }
+    $scope.three = function() {
+        $scope.sort = "rank_bad";
+        return $scope.search();
+    }
+    $scope.four = function() {
+        $scope.sort = "viewed";
+        return $scope.search();
+    }
 }
 
 function AboutController($scope) {
@@ -145,13 +163,18 @@ function WordShowController($scope, Word, $stateParams, Update, ngDialog) {
 		Word.get({ id: $stateParams.id }, function(word) { $scope.word = word; });
 	}
 
+    var voted = false;
 	$scope.upvote = function(id) {
+        if(voted) return;
         Update.save({ call_func: "word_upvote", obj: [ id ]}, function(response) {});
+        voted = true;
         return refresh();
     }
 
 	$scope.downvote = function(id) {
+        if(voted) return;
         Update.save({ call_func: "word_downvote", obj: [ id ]}, function(response) {});
+        voted = true;
         return refresh();
 	}
 
@@ -176,14 +199,19 @@ function WordShowController($scope, Word, $stateParams, Update, ngDialog) {
         return refresh();
     }
 
+    var tagvoted = false;
     $scope.tagupvote = function(id) {
+        if(tagvoted) return;
 		console.log({ call_func: "tag_upvote", obj: [ $scope.word.word_id, id ]});
         Update.save({ call_func: "tag_upvote", obj: [ $scope.word.word_id, id ]}, function(response) {});
+        tagvoted = true;
         return refresh();
     }
     $scope.tagdownvote = function(id) {
-		console.log({ call_func: "tag_downvote", obj: [ $scope.word.word_id, id ]});
+        if(tagvoted) return;
+        console.log({ call_func: "tag_downvote", obj: [ $scope.word.word_id, id ]});
         Update.save({ call_func: "tag_downvote", obj: [ $scope.word.word_id, id ]}, function(response) {});
+        tagvoted = true;
         return refresh();
     }
 
@@ -227,14 +255,19 @@ function CandidateController($scope, Candidate, $stateParams, Update) {
         return refresh();
     }
 
+    var voted = false;
     $scope.upvote = function(id) {
+        if(voted) return;
 		console.log({ call_func: "word_candidate_upvote", obj: [ id ]});
         Update.save({ call_func: "word_candidate_upvote", obj: [ id ]}, function(response) {});
+        voted = true;
         return refresh();
     }
 
     $scope.downvote = function(id) {
+        if(voted) return;
         Update.save({ call_func: "word_candidate_downvote", obj: [ id ]}, function(response) {});
+        voted = true;
         return refresh();
     }
 
