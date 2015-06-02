@@ -200,19 +200,14 @@ function WordShowController($scope, Word, $stateParams, Update, ngDialog) {
         return refresh();
     }
 
-    var tagvoted = false;
     $scope.tagupvote = function(id) {
-        if(tagvoted) return;
 		console.log({ call_func: "tag_upvote", obj: [ $scope.word.word_id, id ]});
         Update.save({ call_func: "tag_upvote", obj: [ $scope.word.word_id, id ]}, function(response) {});
-        tagvoted = true;
         return refresh();
     }
     $scope.tagdownvote = function(id) {
-        if(tagvoted) return;
         console.log({ call_func: "tag_downvote", obj: [ $scope.word.word_id, id ]});
         Update.save({ call_func: "tag_downvote", obj: [ $scope.word.word_id, id ]}, function(response) {});
-        tagvoted = true;
         return refresh();
     }
 
@@ -256,19 +251,14 @@ function CandidateController($scope, Candidate, $stateParams, Update) {
         return refresh();
     }
 
-    var voted = false;
     $scope.upvote = function(id) {
-        if(voted) return;
 		console.log({ call_func: "word_candidate_upvote", obj: [ id ]});
         Update.save({ call_func: "word_candidate_upvote", obj: [ id ]}, function(response) {});
-        voted = true;
         return refresh();
     }
 
     $scope.downvote = function(id) {
-        if(voted) return;
         Update.save({ call_func: "word_candidate_downvote", obj: [ id ]}, function(response) {});
-        voted = true;
         return refresh();
     }
 
