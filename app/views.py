@@ -96,7 +96,12 @@ def search_json():
 @app.route('/api/word', methods=['GET'])
 def word_json():
     word_id = int(request.args.get('id'))
-    return models.get_word_json(word_id, 15)
+    cand_json = models.get_cand_word_json(word_id)
+    if cand_json is None:
+        models.word_view(word_id)
+        return models.get_word_json(word_id, 15)
+    else:
+        return cand_json
 
 
 @app.route('/api/candidate', methods=['GET'])

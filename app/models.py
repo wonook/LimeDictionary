@@ -497,10 +497,12 @@ def get_word_json(word_id, tag_count):
     word_data['tag'] = tag
     return jsonify(word_data)
 
+
+
 def get_cand_word_json(word_id):
     result = db.engine.execute(RAWQUERY['get_cand_word_json'], word_id=word_id).scalar()
     if result is None:
-        return jsonify(dict())
+        return None
     cand_data = {
         'word_id': word_id,
         'word_string': get_word(str(word_id)),
